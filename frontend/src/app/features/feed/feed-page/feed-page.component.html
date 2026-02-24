@@ -1,0 +1,166 @@
+<div class="container py-4">
+  <div class="row">
+
+    <!-- Left Sidebar -->
+    <div class="col-md-3 d-none d-md-block">
+      <div class="card mb-3">
+        <div class="card-body text-center">
+          <div class="rounded-circle bg-primary text-white d-flex align-items-center
+                      justify-content-center mx-auto mb-2" style="width:60px;height:60px;font-size:24px;">
+            👤
+          </div>
+          <a [routerLink]="['/profile', currentUserId]" class="fw-bold text-decoration-none">
+            My Profile
+          </a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <h6 class="fw-bold mb-3">Quick Links</h6>
+          <nav class="nav flex-column gap-2">
+            <a routerLink="/feed" class="nav-link px-0 py-1">🏠 Home Feed</a>
+            <a routerLink="/network" class="nav-link px-0 py-1">👥 My Network</a>
+            <a routerLink="/notifications" class="nav-link px-0 py-1">🔔 Notifications</a>
+            <a routerLink="/posts/trending" class="nav-link px-0 py-1">🔥 Trending</a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Feed -->
+    <div class="col-md-6">
+
+      <!-- Create Post Box -->
+      <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+          <h6 class="fw-bold mb-3">Create Post</h6>
+          <textarea
+            class="form-control mb-2"
+            rows="3"
+            [(ngModel)]="newPostContent"
+            placeholder="What's on your mind?"
+          ></textarea>
+          <input
+            type="text"
+            class="form-control mb-2"
+            [(ngModel)]="newPostHashtags"
+            placeholder="Add hashtags (e.g. #tech #coding)"
+          />
+          <div class="d-flex justify-content-end">
+            <button
+              class="btn btn-primary"
+              (click)="createPost()"
+              [disabled]="!newPostContent.trim() || creatingPost"
+            >
+              <span *ngIf="creatingPost" class="spinner-border spinner-border-sm me-1"></span>
+              Post
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div class="text-center py-5" *ngIf="loading">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">Loading your feed...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div class="text-center py-5" *ngIf="!loading && posts.length === 0">
+        <p class="text-muted fs-5">No posts yet!</p>
+        <p class="text-muted">Connect with people or follow accounts to see posts here.</p>
+        <a routerLink="/users/search" class="btn btn-outline-primary">Find People</a>
+      </div>
+
+      <!-- Posts -->
+      <div class="card mb-3 shadow-sm" *ngFor="let post of posts; let i = index">
+        <div class="card-body">
+
+          <!-- Post Header -->
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle bg-secondary text-white d-flex align-items-center
+                        justify-content-center me-3" style="width:42px;height:42px;font-size:18px;">
+              👤
+            </div>
+            <div class="flex-grow-1">
+              <a [routerLink]="['/profile', post.author.id]" class="fw-bold text-decoration-none">
+                {{ post.author.fullName || post.author.username }}
+              </a>
+              <div class="text-muted small">
+                @{{ post.author.username }} · {{ post.createdAt | date:'short' }}
+                <span *ngIf="post.author.role !== 'PERSONAL'"
+                      class="badge bg-info text-dark ms-1">{{ post.author.role }}</span>
+              </div>
+            </div>
+            <div class="dropdown" *ngIf="post.author.id === currentUserId">
+              <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">⋯</button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" [routerLink]="['/posts', post.id, 'edit']">Edit</a></li>
+                <li><a class="dropdown-item text-danger" (click)="deletePost(post, i)">Delete</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Repost Badge -->
+          <div *ngIf="post.type === 'REPOST' && post.originalPost" class="mb-2">
+            <small class="text-muted">🔄 Reposted from @{{ post.originalPost.author.username }}</small>
+          </div>
+
+          <!-- Content -->
+          <p class="card-text mb-2">{{ post.content }}</p>
+
+          <!-- Hashtags -->
+          <p *ngIf="post.hashtags" class="text-primary small mb-2">{{ post.hashtags }}</p>
+
+          <!-- CTA Button (Business/Creator) -->
+          <a *ngIf="post.callToActionLabel && post.callToActionUrl"
+             [href]="post.callToActionUrl" target="_blank"
+             class="btn btn-outline-primary btn-sm mb-2">
+            {{ post.callToActionLabel }}
+          </a>
+
+          <!-- Image -->
+          <img *ngIf="post.imageUrl" [src]="post.imageUrl"
+               class="img-fluid rounded mb-2 w-100" alt="Post image" />
+
+          <!-- Action Bar -->
+          <hr class="my-2" />
+          <div class="d-flex gap-3">
+            <button class="btn btn-sm"
+                    [class.btn-primary]="post.likedByCurrentUser"
+                    [class.btn-outline-secondary]="!post.likedByCurrentUser"
+                    (click)="toggleLike(post)">
+              {{ post.likedByCurrentUser ? '❤️' : '🤍' }} {{ post.likeCount }}
+            </button>
+            <a [routerLink]="['/posts', post.id]" class="btn btn-sm btn-outline-secondary">
+              💬 {{ post.commentCount }}
+            </a>
+            <button class="btn btn-sm btn-outline-secondary">
+              👁 {{ post.viewCount }}
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Load More -->
+      <div class="text-center py-3" *ngIf="!loading && page < totalPages - 1">
+        <button class="btn btn-outline-primary" (click)="loadMore()">Load More</button>
+      </div>
+
+    </div>
+
+    <!-- Right Sidebar - Trending -->
+    <div class="col-md-3 d-none d-md-block">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="fw-bold mb-3">🔥 Trending</h6>
+          <a routerLink="/posts/trending" class="btn btn-outline-secondary btn-sm w-100">
+            View Trending Posts
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
