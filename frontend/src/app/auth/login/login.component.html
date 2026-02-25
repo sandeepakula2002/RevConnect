@@ -1,0 +1,79 @@
+<div class="auth-container">
+
+  <h1 class="brand">RevConnect</h1>
+
+  <div class="auth-card">
+
+    <!-- LOGIN TITLE -->
+    <h2 *ngIf="!showForgotPassword">Login</h2>
+    <h2 *ngIf="showForgotPassword">Reset Password</h2>
+
+    <!-- ================= LOGIN FORM ================= -->
+    <form *ngIf="!showForgotPassword"
+          [formGroup]="loginForm"
+          (ngSubmit)="onSubmit()">
+
+      <input type="email"
+             placeholder="Email Address"
+             formControlName="email">
+
+      <input type="password"
+             placeholder="Password"
+             formControlName="password">
+
+      <button type="submit">Login</button>
+
+    </form>
+
+    <!-- ================= FORGOT PASSWORD ================= -->
+    <form *ngIf="showForgotPassword"
+          [formGroup]="forgotForm"
+          (ngSubmit)="resetPassword()">
+
+      <input type="email"
+             placeholder="Email Address"
+             formControlName="email">
+
+      <input type="text"
+             placeholder="Security Answer"
+             formControlName="answer">
+
+      <input type="password"
+             placeholder="New Password"
+             formControlName="newPassword">
+
+      <button type="submit">Reset Password</button>
+
+    </form>
+
+    <!-- LINKS -->
+    <p class="switch" *ngIf="!showForgotPassword">
+      <a (click)="showForgotPassword = true" style="cursor:pointer">
+        Forgot Password?
+      </a>
+    </p>
+
+    <p class="switch" *ngIf="showForgotPassword">
+      <a (click)="showForgotPassword = false" style="cursor:pointer">
+        Back to Login
+      </a>
+    </p>
+
+    <p class="switch">
+      Don't have an account?
+      <a routerLink="/register">Create Account</a>
+    </p>
+
+    <!-- ERROR MESSAGE -->
+    <p class="error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </p>
+
+    <!-- SUCCESS MESSAGE -->
+    <p class="success" *ngIf="successMessage">
+      {{ successMessage }}
+    </p>
+
+  </div>
+
+</div>

@@ -1,2 +1,23 @@
-<router-outlet></router-outlet>
-<app-feed></app-feed>
+<!-- ================= LOGIN / REGISTER AREA ================= -->
+<router-outlet *ngIf="!authService.isLoggedIn()"></router-outlet>
+
+
+<!-- ================= DASHBOARD AREA ================= -->
+<div *ngIf="authService.isLoggedIn()">
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <h2>RevConnect</h2>
+    <button (click)="logout()">Logout</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="dashboard-container">
+    <h1 class="welcome-title">Welcome to RevConnect</h1>
+
+    <!-- PROFILE MODULE (keep later if needed) -->
+    <!-- <app-profile-view></app-profile-view> -->
+
+  </div>
+
+</div>

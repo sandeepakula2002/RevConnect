@@ -1,0 +1,16 @@
+.sidebar {
+  width: 220px;
+  background-color: #f1f5f9;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.nav-link {
+  color: #333;
+  font-weight: 500;
+}
+
+.nav-link.active {
+  color: #1E3A8A;
+  font-weight: bold;
+}

@@ -1,0 +1,28 @@
+<div class="profile-card">
+
+  <h3>My Profile</h3>
+
+  <!-- Loading -->
+  <p *ngIf="loading">Loading profile...</p>
+
+  <!-- No profile -->
+  <div *ngIf="!loading && !profile">
+    <p>No profile found.</p>
+    <app-profile-edit></app-profile-edit>
+  </div>
+
+  <!-- Profile exists -->
+  <div *ngIf="profile">
+
+    <p><strong>Name:</strong> {{profile.name}}</p>
+    <p><strong>Headline:</strong> {{profile.headline}}</p>
+    <p><strong>Location:</strong> {{profile.location}}</p>
+    <p><strong>Bio:</strong> {{profile.bio}}</p>
+
+    <app-profile-edit [profile]="profile"></app-profile-edit>
+
+  </div>
+
+  <p class="error" *ngIf="errorMessage">{{errorMessage}}</p>
+
+</div>

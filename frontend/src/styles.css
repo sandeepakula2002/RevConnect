@@ -1,1 +1,13 @@
-/* You can add global styles to this file, and also import other style files */
+.navbar{
+  background:#2a5298;
+  color:white;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.dashboard{
+  padding:40px;
+  text-align:center;
+}/* You can add global styles to this file, and also import other style files */

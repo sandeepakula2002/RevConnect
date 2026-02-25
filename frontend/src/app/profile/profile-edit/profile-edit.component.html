@@ -1,0 +1,14 @@
+<form [formGroup]="form" (ngSubmit)="save()" class="profile-form">
+
+  <input placeholder="Full Name" formControlName="name">
+  <input placeholder="Headline" formControlName="headline">
+  <input placeholder="Location" formControlName="location">
+  <textarea placeholder="Bio" formControlName="bio"></textarea>
+
+  <button type="submit">
+    {{profile ? 'Update Profile' : 'Create Profile'}}
+  </button>
+
+  <p class="success">{{message}}</p>
+
+</form>
