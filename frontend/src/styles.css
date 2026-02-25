@@ -1,1 +1,13 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --primary-blue: #0a66c2;
+  --secondary-bg: #f3f2ef;
+  --text-main: rgba(0, 0, 0, 0.9);
+  --text-muted: rgba(0, 0, 0, 0.6);
+  --border-color: #e0e0e0;
+}
+
+body {
+  background-color: var(--secondary-bg);
+  margin: 0;
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}

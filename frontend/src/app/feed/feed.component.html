@@ -1,1 +1,39 @@
-<p>feed works!</p>
+<div class="feed-container">
+  <h2>Connect with Professionals</h2>
+  
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+  
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+  
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-spinner">
+    Sending request...
+  </div>
+  
+  <!-- Connection Suggestions -->
+  <div class="suggestions-list">
+    <div *ngFor="let user of suggestions" class="suggestion-card">
+      <h3>{{ user.name }}</h3>
+      <p>{{ user.title }}</p>
+      <button 
+        (click)="sendConnectRequest(user.id)" 
+        [disabled]="isLoading"
+        class="connect-btn">
+        {{ isLoading ? 'Sending...' : 'Connect' }}
+      </button>
+    </div>
+  </div>
+  
+  <!-- Test Button (remove in production) -->
+  <div class="test-section">
+    <button (click)="testBackendConnection()" class="test-btn">
+      Test Backend Connection
+    </button>
+  </div>
+</div>
