@@ -4,7 +4,7 @@
 
   <div class="auth-card">
 
-    <!-- LOGIN TITLE -->
+    <!-- TITLE -->
     <h2 *ngIf="!showForgotPassword">Login</h2>
     <h2 *ngIf="showForgotPassword">Reset Password</h2>
 
@@ -21,7 +21,9 @@
              placeholder="Password"
              formControlName="password">
 
-      <button type="submit">Login</button>
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Logging in...' : 'Login' }}
+      </button>
 
     </form>
 
@@ -65,14 +67,14 @@
     </p>
 
     <!-- ERROR MESSAGE -->
-    <p class="error" *ngIf="errorMessage">
+    <div class="error" *ngIf="errorMessage">
       {{ errorMessage }}
-    </p>
+    </div>
 
     <!-- SUCCESS MESSAGE -->
-    <p class="success" *ngIf="successMessage">
+    <div class="success" *ngIf="successMessage">
       {{ successMessage }}
-    </p>
+    </div>
 
   </div>
 

@@ -13,9 +13,10 @@ import { AuthService } from '../../shared/services/auth.service';
 })
 export class LoginComponent {
 
-  errorMessage = '';
-  successMessage = '';
+  errorMessage: string = '';
+  successMessage: string = '';
   showForgotPassword = false;
+  loading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -23,49 +24,82 @@ export class LoginComponent {
     private router: Router
   ) {}
 
+  // ✅ LOGIN FORM
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required]
   });
 
+  // ✅ FORGOT PASSWORD FORM
   forgotForm = this.fb.group({
     email: [''],
     answer: [''],
     newPassword: ['']
   });
 
-  // ✅ LOGIN
+  // ================= LOGIN =================
   onSubmit() {
 
-    if (this.loginForm.invalid) return;
+    // clear previous messages
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    if (this.loginForm.invalid) {
+      this.errorMessage = "Please enter valid email and password";
+      return;
+    }
+
+    this.loading = true;
 
     this.authService.login(this.loginForm.value as any)
       .subscribe({
-        next: () => {
-          alert("Login successful");
+        next: (res: any) => {
 
-          // reload app → dashboard automatically shown
-          window.location.reload();
+          this.loading = false;
+
+          // save token (if backend sends token)
+          if (res?.token) {
+            localStorage.setItem('token', res.token);
+          }
+
+          // ✅ navigate instead of reload
+          this.router.navigate(['/dashboard']);
         },
+
         error: (err) => {
-          this.errorMessage =
-            err.error?.message || "Invalid credentials";
+          this.loading = false;
+
+          console.log("Login Error:", err);
+
+          if (err.status === 401) {
+            this.errorMessage = "Invalid email or password";
+          } else if (err.status === 404) {
+            this.errorMessage = "User not found";
+          } else if (err.error?.message) {
+            this.errorMessage = err.error.message;
+          } else {
+            this.errorMessage = "Login failed. Please try again.";
+          }
         }
       });
   }
 
-  // ✅ RESET PASSWORD
+  // ================= RESET PASSWORD =================
   resetPassword() {
+
+    this.errorMessage = '';
+    this.successMessage = '';
 
     this.authService.forgotPassword(this.forgotForm.value)
       .subscribe({
         next: (res:any) => {
-          this.successMessage = res.message;
+          this.successMessage = res.message || "Password reset successful";
           this.showForgotPassword = false;
+          this.forgotForm.reset();
         },
         error: (err) => {
           this.errorMessage =
-            err.error?.message || "Reset failed";
+            err.error?.message || "Reset failed. Try again.";
         }
       });
   }
