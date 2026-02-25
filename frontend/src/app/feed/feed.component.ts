@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { NetworkService } from '../shared/services/network.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-feed',
@@ -15,7 +16,10 @@ export class FeedComponent {
   suggestions = [
     { id: 102, name: 'John Doe', title: 'Software Engineer' },
     { id: 103, name: 'Jane Smith', title: 'Product Manager' },
-    { id: 104, name: 'Bob Johnson', title: 'UX Designer' }
+    { id: 104, name: 'Bob Johnson', title: 'UX Designer' },
+    { id: 105, name: 'Srinu kurakula', title: 'Cyber Security Head'},
+    {id: 106, name: 'Vasanth Mathangi', title: 'Senior tester'},
+    {id: 107, name: 'Gopal krishna', title: 'Ai consultant'}
   ];
 
   constructor(private networkService: NetworkService) {}
@@ -57,10 +61,7 @@ export class FeedComponent {
   /**
    * Test method to check if backend is reachable
    */
-  testBackendConnection(): void {
-    console.log('🧪 Testing backend connection...');
-    this.sendConnectRequest(102);
-  }
+
   testDifferentIds() {
   console.log('=== Testing Different User ID Combinations ===');
   
