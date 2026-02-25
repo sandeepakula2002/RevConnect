@@ -184,3 +184,26 @@ CREATE TABLE post_hashtags (
     FOREIGN KEY (hashtag_id) REFERENCES hashtags(id)
 
 );
+
+----Notifications Table creation-------
+
+
+-- Run this ONCE in MySQL Workbench before starting the app
+
+---USE revconnect_db;---
+
+CREATE TABLE IF NOT EXISTS notification_settings (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT NOT NULL,
+    type       VARCHAR(50) NOT NULL,
+    is_enabled BOOLEAN DEFAULT TRUE,
+    UNIQUE KEY unique_user_type (user_id, type),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Add sender_id and reference_id to notifications table
+-- Run only if these columns don't exist yet
+ALTER TABLE notifications
+    ADD COLUMN IF NOT EXISTS sender_id    INT,
+    ADD COLUMN IF NOT EXISTS reference_id INT,
+    ADD CONSTRAINT fk_sender FOREIGN KEY (sender_id) REFERENCES users(id);

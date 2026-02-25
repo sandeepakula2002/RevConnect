@@ -1,0 +1,17 @@
+<div class="notification-wrapper">
+
+  <button class="bell-btn" (click)="toggleDropdown()">
+    🔔
+    <span class="badge" *ngIf="unreadCount > 0">
+      {{ unreadCount }}
+    </span>
+  </button>
+
+  <div class="dropdown" *ngIf="showDropdown">
+    <app-notification-list
+      [userId]="userId"
+      (notificationRead)="loadUnreadCount()">
+    </app-notification-list>
+  </div>
+
+</div>

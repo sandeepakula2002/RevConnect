@@ -1,2 +1,32 @@
-<router-outlet></router-outlet>
-<app-feed></app-feed>
+<!-- Main App Container -->
+<div class="app-container">
+
+  <!-- Top Navbar -->
+  <nav class="navbar">
+
+    <!-- Left Side - Logo -->
+    <div class="nav-logo">
+      <span class="logo-text">RevConnect</span>
+    </div>
+
+    <!-- Middle - Navigation Links -->
+    <div class="nav-links">
+      <a href="#" class="nav-link">🏠 Home</a>
+      <a href="#" class="nav-link">👤 Profile</a>
+      <a href="#" class="nav-link">🤝 Connections</a>
+      <a href="#" class="nav-link">💼 Jobs</a>
+    </div>
+
+    <!-- Right Side - Notification Bell -->
+    <div class="nav-right">
+      <app-notification-bell></app-notification-bell>
+    </div>
+
+  </nav>
+
+  <!-- Page Content Below Navbar -->
+  <div class="main-content">
+    <router-outlet></router-outlet>
+  </div>
+
+</div>

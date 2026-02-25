@@ -1,0 +1,69 @@
+/* ===== RESET ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+/* ===== MAIN WRAPPER ===== */
+.app-container {
+  min-height: 100vh;
+  background-color: #f3f2ef;
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: white;
+  padding: 10px 24px;
+  border-bottom: 1px solid #ddd;
+  position: fixed;        /* Stays at top when scrolling */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  height: 60px;
+}
+
+/* ===== LOGO ===== */
+.nav-logo .logo-text {
+  font-size: 22px;
+  font-weight: bold;
+  color: #0073b1;         /* LinkedIn blue */
+}
+
+/* ===== NAV LINKS ===== */
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #555;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.nav-link:hover {
+  background-color: #f0f0f0;
+  color: #0073b1;
+}
+
+/* ===== RIGHT SIDE ===== */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ===== PAGE CONTENT ===== */
+.main-content {
+  margin-top: 70px;       /* Space below fixed navbar */
+  padding: 20px;
+}
