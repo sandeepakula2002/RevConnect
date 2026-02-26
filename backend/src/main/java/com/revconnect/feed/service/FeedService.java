@@ -19,6 +19,9 @@ import java.util.List;
 public class FeedService {
 
     @Autowired private PostRepository postRepository;
+    @Autowired private ConnectionRepository connectionRepository;
+    @Autowired private FollowRepository followRepository;
+    @Autowired private UserService userService;
     @Autowired private PostService postService;
 
     public Page<PostDtos.PostResponse> getFeed(String username, int page, int size) {
