@@ -1,0 +1,109 @@
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light py-4">
+  <div class="card shadow-sm" style="width: 480px;">
+    <div class="card-body p-5">
+
+      <div class="text-center mb-4">
+        <h2 class="fw-bold text-primary">RevConnect</h2>
+        <p class="text-muted">Create your account</p>
+      </div>
+
+      <!-- ✅ ERROR MESSAGE -->
+      <div class="alert alert-danger" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <!-- ✅ SUCCESS MESSAGE (ADDED) -->
+      <div class="alert alert-success" *ngIf="success">
+        {{ success }}
+      </div>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+        <!-- Account Type -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Account Type</label>
+          <select class="form-select" formControlName="role">
+            <option value="PERSONAL">Personal</option>
+            <option value="CREATOR">Creator</option>
+            <option value="BUSINESS">Business</option>
+          </select>
+        </div>
+
+        <!-- Name Row -->
+        <div class="row g-2 mb-3">
+          <div class="col">
+            <label class="form-label fw-semibold">First Name</label>
+            <input type="text" class="form-control" formControlName="firstName" placeholder="First" />
+          </div>
+          <div class="col">
+            <label class="form-label fw-semibold">Last Name</label>
+            <input type="text" class="form-control" formControlName="lastName" placeholder="Last" />
+          </div>
+        </div>
+
+        <!-- Username -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">
+            Username <span class="text-danger">*</span>
+          </label>
+          <input
+            type="text"
+            class="form-control"
+            [class.is-invalid]="f['username'].invalid && f['username'].touched"
+            formControlName="username"
+            placeholder="Choose a username"
+          />
+          <div class="invalid-feedback">Username must be 3–50 characters</div>
+        </div>
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">
+            Email <span class="text-danger">*</span>
+          </label>
+          <input
+            type="email"
+            class="form-control"
+            [class.is-invalid]="f['email'].invalid && f['email'].touched"
+            formControlName="email"
+            placeholder="your@email.com"
+          />
+          <div class="invalid-feedback">Please enter a valid email</div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">
+            Password <span class="text-danger">*</span>
+          </label>
+          <input
+            type="password"
+            class="form-control"
+            [class.is-invalid]="f['password'].invalid && f['password'].touched"
+            formControlName="password"
+            placeholder="Minimum 8 characters"
+          />
+          <div class="invalid-feedback">Password must be at least 8 characters</div>
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-primary w-100 py-2"
+          [disabled]="registerForm.invalid || loading"
+        >
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ loading ? 'Creating account...' : 'Create Account' }}
+        </button>
+
+      </form>
+
+      <hr class="my-4">
+
+      <p class="text-center mb-0">
+        Already have an account?
+        <a routerLink="/login" class="text-primary fw-semibold">Sign in</a>
+      </p>
+
+    </div>
+  </div>
+</div>

@@ -21,7 +21,7 @@ export class AuthService {
 
   register(request: RegisterRequest): Observable<ApiResponse<AuthResponse>> {
     return this.http.post<ApiResponse<AuthResponse>>(`${this.API}/register`, request).pipe(
-      tap(res => this.storeSession(res.data))
+
     );
   }
 
