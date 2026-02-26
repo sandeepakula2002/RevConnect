@@ -14,7 +14,7 @@ export class FeedPageComponent implements OnInit {
   posts: Post[] = [];
   loading = true;
   page = 0;
-  totalPages = 0;//all pages
+  totalPages = 0;
   currentUserId: number | null;
 
   newPostContent = '';

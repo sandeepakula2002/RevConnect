@@ -20,4 +20,4 @@ public class RevConnectApplication {
         logger.info("==============================================");
     }
 }
-//Run the application
+//Run the application now
