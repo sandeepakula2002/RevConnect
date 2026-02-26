@@ -18,6 +18,7 @@ import java.util.Map;
 @RequestMapping("/notifications")
 public class NotificationController {
 
+    //Injection
     @Autowired private NotificationService notificationService;
     @Autowired private UserService userService;
 
