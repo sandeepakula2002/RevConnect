@@ -1,0 +1,61 @@
+/* Profile card spacing */
+.card {
+  border-radius: 12px;
+}
+
+/* Avatar */
+.rounded-circle {
+  font-size: 36px;
+  user-select: none;
+}
+
+/* Username */
+h4 {
+  line-height: 1.2;
+}
+
+/* Bio text */
+p {
+  margin-bottom: 0.5rem;
+}
+
+/* Profile meta icons row */
+.text-muted span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Stats section */
+.text-center {
+  min-width: 70px;
+}
+
+/* Buttons consistency */
+.btn {
+  border-radius: 8px;
+}
+
+/* Post card */
+.card-body p {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Post image */
+img {
+  max-height: 420px;
+  object-fit: cover;
+}
+
+/* Like / comment buttons */
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+/* Spinner center */
+.spinner-border {
+  width: 2.5rem;
+  height: 2.5rem;
+}
