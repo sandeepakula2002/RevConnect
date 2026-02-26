@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Property>
+        <Property name="LOG_DIR">logs</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- Console Appender -->
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <!-- Rolling File Appender for Application Logs -->
+        <RollingFile name="FileAppender"
+                     fileName="${LOG_DIR}/revconnect.log"
+                     filePattern="${LOG_DIR}/revconnect-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+
+        <!-- Separate Error Log -->
+        <RollingFile name="ErrorAppender"
+                     fileName="${LOG_DIR}/revconnect-error.log"
+                     filePattern="${LOG_DIR}/revconnect-error-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- Security/Auth Log -->
+        <RollingFile name="SecurityAppender"
+                     fileName="${LOG_DIR}/revconnect-security.log"
+                     filePattern="${LOG_DIR}/revconnect-security-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <!-- Security Logger -->
+        <Logger name="com.revconnect.security" level="INFO" additivity="false">
+            <AppenderRef ref="SecurityAppender"/>
+            <AppenderRef ref="ConsoleAppender"/>
+        </Logger>
+
+        <!-- Application Logger -->
+        <Logger name="com.revconnect" level="DEBUG" additivity="false">
+            <AppenderRef ref="FileAppender"/>
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="ErrorAppender"/>
+        </Logger>
+
+        <!-- Hibernate SQL Logger -->
+        <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+        </Logger>
+
+        <!-- Root Logger -->
+        <Root level="INFO">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="FileAppender"/>
+            <AppenderRef ref="ErrorAppender"/>
+        </Root>
+    </Loggers>
+
+</Configuration>
