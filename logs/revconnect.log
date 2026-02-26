@@ -4561,3 +4561,43 @@ Caused by: java.sql.SQLIntegrityConstraintViolationException: Cannot add or upda
 2026-02-26 02:10:02.275 [SpringApplicationShutdownHook] INFO  org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
 2026-02-26 02:10:02.276 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
 2026-02-26 02:10:02.280 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-02-26 09:20:12.195 [background-preinit] INFO  org.hibernate.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.1.Final
+2026-02-26 09:20:12.251 [main] INFO  com.revconnect.RevConnectApplication - Starting RevConnectApplication using Java 25.0.2 with PID 25856 (C:\Users\Mahendra Reddy\Desktop\RevConnect\backend\target\classes started by Mahendra Reddy in C:\Users\Mahendra Reddy\Desktop\RevConnect)
+2026-02-26 09:20:12.255 [main] DEBUG com.revconnect.RevConnectApplication - Running with Spring Boot v3.2.0, Spring v6.1.1
+2026-02-26 09:20:12.256 [main] INFO  com.revconnect.RevConnectApplication - No active profile set, falling back to 1 default profile: "default"
+2026-02-26 09:20:13.182 [main] INFO  org.springframework.data.repository.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-02-26 09:20:13.288 [main] INFO  org.springframework.data.repository.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 97 ms. Found 7 JPA repository interfaces.
+2026-02-26 09:20:14.111 [main] INFO  org.springframework.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2026-02-26 09:20:14.122 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-02-26 09:20:14.124 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-02-26 09:20:14.125 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2026-02-26 09:20:14.184 [main] INFO  org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/api] - Initializing Spring embedded WebApplicationContext
+2026-02-26 09:20:14.185 [main] INFO  org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1872 ms
+2026-02-26 09:20:14.490 [main] INFO  org.hibernate.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-02-26 09:20:14.579 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.3.1.Final
+2026-02-26 09:20:14.638 [main] INFO  org.hibernate.cache.internal.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-02-26 09:20:14.935 [main] INFO  org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-02-26 09:20:14.983 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-02-26 09:20:15.176 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@687b0ddc
+2026-02-26 09:20:15.179 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-02-26 09:20:15.237 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-02-26 09:20:16.529 [main] INFO  org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-02-26 09:20:16.898 [main] INFO  org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-02-26 09:20:18.291 [main] INFO  org.springframework.data.jpa.repository.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-02-26 09:20:22.786 [main] INFO  org.springframework.security.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@40190f7f, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@98be09f, org.springframework.security.web.context.SecurityContextHolderFilter@1df2b230, org.springframework.security.web.header.HeaderWriterFilter@5fcf9bff, org.springframework.web.filter.CorsFilter@65f85228, org.springframework.security.web.authentication.logout.LogoutFilter@44a83ca4, com.revconnect.security.JwtAuthenticationFilter@23644367, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@14443c86, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@7eb03024, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@222456bc, org.springframework.security.web.session.SessionManagementFilter@4abc179d, org.springframework.security.web.access.ExceptionTranslationFilter@1607b56b, org.springframework.security.web.access.intercept.AuthorizationFilter@379445f]
+2026-02-26 09:20:23.541 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-02-26 09:20:23.591 [main] INFO  org.springframework.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/api'
+2026-02-26 09:20:23.617 [main] INFO  com.revconnect.RevConnectApplication - Started RevConnectApplication in 11.803 seconds (process running for 13.058)
+2026-02-26 09:20:23.625 [main] INFO  com.revconnect.RevConnectApplication - ==============================================
+2026-02-26 09:20:23.625 [main] INFO  com.revconnect.RevConnectApplication -    RevConnect Application Started!
+2026-02-26 09:20:23.626 [main] INFO  com.revconnect.RevConnectApplication -    API Base URL: http://localhost:8080/api
+2026-02-26 09:20:23.626 [main] INFO  com.revconnect.RevConnectApplication - ==============================================
+2026-02-26 09:22:33.108 [http-nio-8080-exec-1] INFO  org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/api] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-02-26 09:22:33.114 [http-nio-8080-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-02-26 09:22:33.114 [http-nio-8080-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Completed initialization in 0 ms
+2026-02-26 09:22:33.208 [http-nio-8080-exec-2] WARN  org.springframework.web.servlet.handler.HandlerMappingIntrospector - Cache miss for REQUEST dispatch to '/api/auth/register' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+2026-02-26 09:22:35.391 [http-nio-8080-exec-2] INFO  com.revconnect.auth.service.AuthService - New user registered: Krishna (PERSONAL)
+2026-02-26 10:16:06.196 [http-nio-8080-exec-10] INFO  com.revconnect.auth.service.AuthService - User logged in: Krishna
+2026-02-26 10:51:25.460 [SpringApplicationShutdownHook] INFO  org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-02-26 10:51:25.462 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-02-26 10:51:25.465 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
