@@ -1,10 +1,22 @@
+<<<<<<< HEAD
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 # Compiled output
+=======
+####################################
+# Git Ignore – Full Stack Project
+# Angular + Node + Java (Optional)
+####################################
+
+# ================================
+# Compiled / Build Output
+# ================================
+>>>>>>> 0ed30e1a1c91ff0c6833b2890f5b5f252d2b90f7
 /dist
 /tmp
 /out-tsc
 /bazel-out
+<<<<<<< HEAD
 
 # Node
 /node_modules
@@ -21,11 +33,54 @@ yarn-error.log
 *.sublime-workspace
 
 # Visual Studio Code
+=======
+/build
+/coverage
+
+# ================================
+# Node / NPM / Yarn
+# ================================
+/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ================================
+# Angular
+# ================================
+/.angular/cache
+/.angular
+
+# ================================
+# Environment Files
+# ================================
+.env
+.env.*
+!.env.example
+
+# ================================
+# IDE & Editors
+# ================================
+.idea/
+.project
+.classpath
+.settings/
+.c9/
+*.launch
+*.sublime-workspace
+*.sublime-project
+
+# ================================
+# Visual Studio Code
+# ================================
+>>>>>>> 0ed30e1a1c91ff0c6833b2890f5b5f252d2b90f7
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+<<<<<<< HEAD
 .history/*
 
 # Miscellaneous
@@ -40,3 +95,56 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+=======
+.history/
+
+# ================================
+# Logs
+# ================================
+logs/
+*.log
+libpeerconnection.log
+testem.log
+
+# ================================
+# OS System Files
+# ================================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ================================
+# Java / Spring Boot (if backend uses Java)
+# ================================
+/target
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+
+# ================================
+# Python (if used)
+# ================================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.env/
+
+# ================================
+# Database / Local files
+# ================================
+*.sqlite
+*.db
+*.sql
+
+# ================================
+# Miscellaneous
+# ================================
+/connect.lock
+/typings
+.cache/
+>>>>>>> 0ed30e1a1c91ff0c6833b2890f5b5f252d2b90f7
