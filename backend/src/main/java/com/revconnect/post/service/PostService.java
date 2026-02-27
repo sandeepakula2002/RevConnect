@@ -48,7 +48,7 @@ public class PostService {
                 .scheduledAt(request.getScheduledAt())
                 .published(request.getScheduledAt() == null);
 
-        // Handle repost
+        // Handle repost//
         if (request.getOriginalPostId() != null) {
             Post original = postRepository.findById(request.getOriginalPostId())
                     .orElseThrow(() -> new ResourceNotFoundException("Original post", request.getOriginalPostId()));

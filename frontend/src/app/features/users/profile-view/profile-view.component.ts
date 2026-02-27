@@ -1,99 +1,60 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { UserService } from '../../../core/services/user.service';
-import { PostService } from '../../../core/services/post.service';
-import { NetworkService } from '../../../core/services/network.service';
-import { AuthService } from '../../../core/services/auth.service';
-import { User, Post, PageResponse } from '../../../shared/models/models';
+import { Router } from '@angular/router';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-profile-view',
-  templateUrl: './profile-view.component.html'
+  templateUrl: './profile-view.component.html',
+  styleUrls: ['./profile-view.component.css']
 })
 export class ProfileViewComponent implements OnInit {
 
-  user: User | null = null;
-  posts: Post[] = [];
-  loading = true;
-  postsLoading = false;
-  isOwnProfile = false;
-  activeTab = 'posts';
+  // Profile data
+  profile: any = {
+    id: 1,
+    name: 'Gopala',
+    bio: 'Java Developer',
+    role: 'CREATOR'
+  };
+
+  // Required properties
+  userId!: number;
+  saved: boolean = false;
+  error: string | null = null;
+  isBusinessOrCreator: boolean = false;
+
+  // Reactive form
+  profileForm!: FormGroup;
 
   constructor(
-    private route: ActivatedRoute,
-    private userService: UserService,
-    private postService: PostService,
-    private networkService: NetworkService,
-    private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private fb: FormBuilder
   ) {}
 
-  ngOnInit() {
-    this.route.params.subscribe(params => {
-      const userId = +params['id'];
-      this.isOwnProfile = userId === this.authService.getCurrentUserId();
-      this.loadProfile(userId);
-      this.loadPosts(userId);
+  ngOnInit(): void {
+    // set userId
+    this.userId = this.profile.id;
+
+    // role check
+    this.isBusinessOrCreator =
+      this.profile.role === 'BUSINESS' || this.profile.role === 'CREATOR';
+
+    // form init
+    this.profileForm = this.fb.group({
+      name: [this.profile.name],
+      bio: [this.profile.bio]
     });
   }
 
-  loadProfile(userId: number) {
-    this.loading = true;
-    this.userService.getUserById(userId).subscribe({
-      next: (res) => { this.user = res.data; this.loading = false; },
-      error: () => { this.loading = false; this.router.navigate(['/feed']); }
-    });
+  // navigation method (used in HTML)
+  goToProfile(id: number) {
+    this.router.navigate(['/profile', id]);
   }
 
-  loadPosts(userId: number) {
-  this.postsLoading = true;
-  this.postService.getUserPosts(userId).subscribe({
-    next: (res) => {
-      console.log("FULL RESPONSE:", JSON.stringify(res));
-      console.log("CONTENT:", res.data?.content);
-      this.posts = res.data.content;
-      this.postsLoading = false;
-    },
-    error: (err) => {
-      console.error("POSTS ERROR:", err);
-      this.postsLoading = false;
-    }
-  });
-}
-  toggleFollow() {
-    if (!this.user) return;
-    if (this.user.isFollowing) {
-      this.networkService.unfollow(this.user.id).subscribe(() => {
-        this.user!.isFollowing = false;
-        this.user!.followerCount--;
-      });
-    } else {
-      this.networkService.follow(this.user.id).subscribe(() => {
-        this.user!.isFollowing = true;
-        this.user!.followerCount++;
-      });
-    }
-  }
-
-  sendConnectionRequest() {
-    if (!this.user) return;
-    this.networkService.sendRequest(this.user.id).subscribe({
-      next: () => alert('Connection request sent!'),
-      error: (err) => alert(err.error?.message || 'Already connected or pending')
-    });
-  }
-
-  toggleLike(post: Post) {
-    if (post.likedByCurrentUser) {
-      this.postService.unlikePost(post.id).subscribe(res => {
-        post.likedByCurrentUser = false;
-        post.likeCount = res.data.likeCount;
-      });
-    } else {
-      this.postService.likePost(post.id).subscribe(res => {
-        post.likedByCurrentUser = true;
-        post.likeCount = res.data.likeCount;
-      });
-    }
+  // form submit
+  onSubmit() {
+    console.log(this.profileForm.value);
+    this.saved = true;
+    this.error = null;
   }
 }

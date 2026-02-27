@@ -1,129 +1,47 @@
-<div class="container py-4" *ngIf="!loading">
+<div class="container mt-4">
 
-  <!-- Profile Card -->
-  <div class="card shadow-sm mb-4" *ngIf="user">
-    <div class="card-body p-4">
-      <div class="d-flex align-items-start gap-4 flex-wrap">
+  <!-- Navigate -->
+  <button class="btn btn-primary mb-3"
+          (click)="goToProfile(userId)">
+    Go to Profile
+  </button>
 
-        <!-- Avatar -->
-        <div class="rounded-circle bg-primary text-white d-flex align-items-center
-                    justify-content-center flex-shrink-0" style="width:90px;height:90px;font-size:36px;">
-          👤
-        </div>
+  <!-- Success Message -->
+  <div class="alert alert-success" *ngIf="saved">
+    Profile saved successfully!
+  </div>
 
-        <!-- Info -->
-        <div class="flex-grow-1">
-          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-            <div>
-              <h4 class="fw-bold mb-0">{{ user.fullName || user.username }}</h4>
-              <p class="text-muted mb-1">@{{ user.username }}</p>
-              <span class="badge"
-                [class.bg-info]="user.role === 'CREATOR'"
-                [class.bg-success]="user.role === 'BUSINESS'"
-                [class.bg-secondary]="user.role === 'PERSONAL'">
-                {{ user.role }}
-              </span>
-            </div>
-            <div class="d-flex gap-2">
-              <a *ngIf="isOwnProfile" [routerLink]="['/profile', user.id, 'edit']"
-                 class="btn btn-outline-secondary">Edit Profile</a>
+  <!-- Error Message -->
+  <div class="alert alert-danger" *ngIf="error">
+    {{ error }}
+  </div>
 
-              <ng-container *ngIf="!isOwnProfile">
-                <button *ngIf="user.role === 'PERSONAL'"
-                        class="btn btn-outline-primary"
-                        (click)="sendConnectionRequest()"
-                        [disabled]="user.isConnected">
-                  {{ user.isConnected ? '✓ Connected' : '+ Connect' }}
-                </button>
-                <button class="btn"
-                        [class.btn-primary]="!user.isFollowing"
-                        [class.btn-outline-secondary]="user.isFollowing"
-                        (click)="toggleFollow()">
-                  {{ user.isFollowing ? 'Unfollow' : 'Follow' }}
-                </button>
-              </ng-container>
-            </div>
-          </div>
+  <!-- Profile Info -->
+  <h3>{{ profile.name }}</h3>
+  <p>{{ profile.bio }}</p>
 
-          <!-- Bio -->
-          <p class="mt-2 mb-2" *ngIf="user.bio">{{ user.bio }}</p>
-
-          <!-- Meta -->
-          <div class="d-flex flex-wrap gap-3 text-muted small mb-2">
-            <span *ngIf="user.location">📍 {{ user.location }}</span>
-            <span *ngIf="user.website">
-              🔗 <a [href]="user.website" target="_blank">{{ user.website }}</a>
-            </span>
-            <span *ngIf="user.businessName">🏢 {{ user.businessName }}</span>
-            <span *ngIf="user.category">📂 {{ user.category }}</span>
-          </div>
-
-          <!-- Stats -->
-          <div class="d-flex gap-4">
-            <div class="text-center">
-              <div class="fw-bold">{{ user.postCount }}</div>
-              <div class="text-muted small">Posts</div>
-            </div>
-            <div class="text-center">
-              <div class="fw-bold">{{ user.followerCount }}</div>
-              <div class="text-muted small">Followers</div>
-            </div>
-            <div class="text-center">
-              <div class="fw-bold">{{ user.followingCount }}</div>
-              <div class="text-muted small">Following</div>
-            </div>
-            <div class="text-center" *ngIf="user.role === 'PERSONAL'">
-              <div class="fw-bold">{{ user.connectionCount }}</div>
-              <div class="text-muted small">Connections</div>
-            </div>
-          </div>
-        </div>
-
-      </div>
+  <!-- Form -->
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+    <div class="mb-3">
+      <label>Name</label>
+      <input class="form-control" formControlName="name">
     </div>
-  </div>
 
-  <!-- Posts Section -->
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="fw-bold mb-0">Posts</h5>
-  </div>
-
-  <div class="text-center py-4" *ngIf="postsLoading">
-    <div class="spinner-border text-primary"></div>
-  </div>
-
-  <div class="text-center py-4 text-muted" *ngIf="!postsLoading && posts.length === 0">
-    No posts yet.
-  </div>
-
-  <div class="card mb-3 shadow-sm" *ngFor="let post of posts">
-    <div class="card-body">
-      <div class="d-flex justify-content-between mb-2">
-        <span class="text-muted small">{{ post.createdAt | date:'medium' }}</span>
-        <span *ngIf="post.pinned" class="badge bg-warning text-dark">📌 Pinned</span>
-      </div>
-      <p>{{ post.content }}</p>
-      <p *ngIf="post.hashtags" class="text-primary small">{{ post.hashtags }}</p>
-      <img *ngIf="post.imageUrl" [src]="post.imageUrl" class="img-fluid rounded mb-2 w-100" />
-      <hr class="my-2" />
-      <div class="d-flex gap-3">
-        <button class="btn btn-sm"
-                [class.btn-primary]="post.likedByCurrentUser"
-                [class.btn-outline-secondary]="!post.likedByCurrentUser"
-                (click)="toggleLike(post)">
-          {{ post.likedByCurrentUser ? '❤️' : '🤍' }} {{ post.likeCount }}
-        </button>
-        <a [routerLink]="['/posts', post.id]" class="btn btn-sm btn-outline-secondary">
-          💬 {{ post.commentCount }}
-        </a>
-        <span class="btn btn-sm btn-outline-secondary disabled">👁 {{ post.viewCount }}</span>
-      </div>
+    <div class="mb-3">
+      <label>Bio</label>
+      <textarea class="form-control" formControlName="bio"></textarea>
     </div>
-  </div>
 
-</div>
+    <button class="btn btn-success" type="submit">
+      Save
+    </button>
+  </form>
 
-<!-- Loading -->
-<div class="text-center py-5" *ngIf="loading">
-  <div class="spinner-border text-primary"></div>
+  <!-- Business / Creator Section -->
+  <ng-container *ngIf="isBusinessOrCreator">
+    <hr>
+    <h5>Business / Creator Section</h5>
+    <p>Visible only for Business or Creator users.</p>
+  </ng-container>
+
 </div>

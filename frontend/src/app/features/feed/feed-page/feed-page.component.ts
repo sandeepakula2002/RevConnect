@@ -4,6 +4,7 @@ import { environment } from '../../../../environments/environment';
 import { ApiResponse, PageResponse, Post } from '../../../shared/models/models';
 import { PostService } from '../../../core/services/post.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { UserService } from '../../../core/services/user.service'; // ✅ ADD
 
 @Component({
   selector: 'app-feed-page',
@@ -11,6 +12,7 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class FeedPageComponent implements OnInit {
 
+  // ================= FEED =================
   posts: Post[] = [];
   loading = true;
   page = 0;
@@ -21,10 +23,15 @@ export class FeedPageComponent implements OnInit {
   newPostHashtags = '';
   creatingPost = false;
 
+  // ================= SEARCH =================
+  searchQuery: string = '';   // ✅ ADD
+  users: any[] = [];          // ✅ ADD
+
   constructor(
     private http: HttpClient,
     private postService: PostService,
-    private authService: AuthService
+    private authService: AuthService,
+    private userService: UserService // ✅ ADD
   ) {
     this.currentUserId = authService.getCurrentUserId();
   }
@@ -33,6 +40,7 @@ export class FeedPageComponent implements OnInit {
     this.loadFeed();
   }
 
+  // ================= FEED LOGIC =================
   loadFeed() {
     this.loading = true;
     this.http.get<ApiResponse<PageResponse<Post>>>(
@@ -96,5 +104,22 @@ export class FeedPageComponent implements OnInit {
         this.posts = [...this.posts, ...res.data.content];
       });
     }
+  }
+
+  // ================= SEARCH LOGIC =================
+  searchUsers() {
+    if (!this.searchQuery.trim()) {
+      this.users = [];
+      return;
+    }
+
+    this.userService.searchUsers(this.searchQuery).subscribe({
+      next: (res) => {
+        this.users = res.data;
+      },
+      error: (err) => {
+        console.error('Search failed', err);
+      }
+    });
   }
 }
