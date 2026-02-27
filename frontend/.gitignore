@@ -40,3 +40,28 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+# ======================
+# Spring Boot
+# ======================
+backend/logs/
+backend/target/
+logs/
+*.log
+
+# ======================
+# Angular
+# ======================
+frontend/node_modules/
+frontend/dist/
+
+# ======================
+# IDE
+# ======================
+.idea/
+*.iml
+
+# ======================
+# OS
+# ======================
+.DS_Store
+Thumbs.db
