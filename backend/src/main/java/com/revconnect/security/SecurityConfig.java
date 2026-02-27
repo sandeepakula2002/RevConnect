@@ -34,10 +34,9 @@ public class SecurityConfig {
     private String allowedOrigins;
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
-    }
-
+public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+}
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration authConfig) throws Exception {

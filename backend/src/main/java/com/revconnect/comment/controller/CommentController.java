@@ -3,7 +3,6 @@ package com.revconnect.comment.controller;
 import com.revconnect.comment.model.Comment;
 import com.revconnect.comment.service.CommentService;
 import com.revconnect.common.dto.ApiResponse;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;

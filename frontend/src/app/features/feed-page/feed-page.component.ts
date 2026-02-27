@@ -1,10 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+<<<<<<< HEAD:frontend/src/app/features/feed/feed-page/feed-page.component.ts
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, PageResponse, Post } from '../../../shared/models/models';
 import { PostService } from '../../../core/services/post.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service'; // ✅ ADD
+=======
+import { environment } from '../../../environments/environment';
+import { ApiResponse, PageResponse, Post } from '../../shared/models/models';
+import { PostService } from '../../core/services/post.service';
+import { AuthService } from '../../core/services/auth.service';
+>>>>>>> 024a8670ed5f87238d612fc64a122d7d5c4893b4:frontend/src/app/features/feed-page/feed-page.component.ts
 
 @Component({
   selector: 'app-feed-page',
