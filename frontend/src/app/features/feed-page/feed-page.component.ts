@@ -1,17 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-<<<<<<< HEAD:frontend/src/app/features/feed/feed-page/feed-page.component.ts
-import { environment } from '../../../../environments/environment';
-import { ApiResponse, PageResponse, Post } from '../../../shared/models/models';
-import { PostService } from '../../../core/services/post.service';
-import { AuthService } from '../../../core/services/auth.service';
-import { UserService } from '../../../core/services/user.service'; // ✅ ADD
-=======
+
 import { environment } from '../../../environments/environment';
 import { ApiResponse, PageResponse, Post } from '../../shared/models/models';
 import { PostService } from '../../core/services/post.service';
 import { AuthService } from '../../core/services/auth.service';
->>>>>>> 024a8670ed5f87238d612fc64a122d7d5c4893b4:frontend/src/app/features/feed-page/feed-page.component.ts
+import { UserService } from '../../core/services/user.service';
 
 @Component({
   selector: 'app-feed-page',
@@ -31,16 +25,16 @@ export class FeedPageComponent implements OnInit {
   creatingPost = false;
 
   // ================= SEARCH =================
-  searchQuery: string = '';   // ✅ ADD
-  users: any[] = [];          // ✅ ADD
+  searchQuery: string = '';
+  users: any[] = [];
 
   constructor(
     private http: HttpClient,
     private postService: PostService,
     private authService: AuthService,
-    private userService: UserService // ✅ ADD
+    private userService: UserService
   ) {
-    this.currentUserId = authService.getCurrentUserId();
+    this.currentUserId = this.authService.getCurrentUserId();
   }
 
   ngOnInit() {
@@ -50,6 +44,7 @@ export class FeedPageComponent implements OnInit {
   // ================= FEED LOGIC =================
   loadFeed() {
     this.loading = true;
+
     this.http.get<ApiResponse<PageResponse<Post>>>(
       `${environment.apiUrl}/feed?page=${this.page}&size=10`
     ).subscribe({
@@ -64,6 +59,7 @@ export class FeedPageComponent implements OnInit {
 
   createPost() {
     if (!this.newPostContent.trim()) return;
+
     this.creatingPost = true;
 
     this.postService.createPost({
@@ -105,6 +101,7 @@ export class FeedPageComponent implements OnInit {
   loadMore() {
     if (this.page < this.totalPages - 1) {
       this.page++;
+
       this.http.get<ApiResponse<PageResponse<Post>>>(
         `${environment.apiUrl}/feed?page=${this.page}&size=10`
       ).subscribe(res => {

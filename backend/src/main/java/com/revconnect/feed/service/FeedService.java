@@ -4,6 +4,7 @@ import com.revconnect.network.repository.ConnectionRepository;
 import com.revconnect.network.repository.FollowRepository;
 import com.revconnect.post.dto.PostDtos;
 import com.revconnect.post.repository.PostRepository;
+import com.revconnect.post.service.PostService;
 import com.revconnect.user.model.User;
 import com.revconnect.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

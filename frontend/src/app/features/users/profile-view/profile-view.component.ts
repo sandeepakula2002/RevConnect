@@ -9,7 +9,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 })
 export class ProfileViewComponent implements OnInit {
 
-  // Profile data
+  // ================= PROFILE DATA =================
   profile: any = {
     id: 1,
     name: 'Gopala',
@@ -17,13 +17,19 @@ export class ProfileViewComponent implements OnInit {
     role: 'CREATOR'
   };
 
-  // Required properties
+  user: any = this.profile;
+
+  // ================= REQUIRED PROPERTIES =================
   userId!: number;
   saved: boolean = false;
   error: string | null = null;
   isBusinessOrCreator: boolean = false;
 
-  // Reactive form
+  // ================= POSTS =================
+  posts: any[] = [];
+  postsLoading: boolean = false;
+
+  // ================= FORM =================
   profileForm!: FormGroup;
 
   constructor(
@@ -32,6 +38,7 @@ export class ProfileViewComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+
     // set userId
     this.userId = this.profile.id;
 
@@ -46,61 +53,46 @@ export class ProfileViewComponent implements OnInit {
     });
   }
 
-  // navigation method (used in HTML)
+  // ================= NAVIGATION =================
   goToProfile(id: number) {
     this.router.navigate(['/profile', id]);
   }
 
-<<<<<<< HEAD
-  // form submit
+  // ================= FORM SUBMIT =================
   onSubmit() {
     console.log(this.profileForm.value);
     this.saved = true;
     this.error = null;
-=======
+  }
+
+  // ================= POSTS =================
   loadPosts(userId: number) {
     this.postsLoading = true;
-    this.postService.getUserPosts(userId).subscribe({
-      next: (res) => { this.posts = res.data.content; this.postsLoading = false; },
-      error: () => this.postsLoading = false
-    });
+
+    // placeholder (service call removed during merge)
+    setTimeout(() => {
+      this.postsLoading = false;
+    }, 500);
   }
 
+  // ================= FOLLOW =================
   toggleFollow() {
     if (!this.user) return;
-    if (this.user.isFollowing) {
-      this.networkService.unfollow(this.user.id).subscribe(() => {
-        this.user!.isFollowing = false;
-        this.user!.followerCount--;
-      });
-    } else {
-      this.networkService.follow(this.user.id).subscribe(() => {
-        this.user!.isFollowing = true;
-        this.user!.followerCount++;
-      });
-    }
+
+    this.user.isFollowing = !this.user.isFollowing;
+    this.user.followerCount =
+      (this.user.followerCount || 0) + (this.user.isFollowing ? 1 : -1);
   }
 
+  // ================= CONNECTION =================
   sendConnectionRequest() {
-    if (!this.user) return;
-    this.networkService.sendRequest(this.user.id).subscribe({
-      next: () => alert('Connection request sent!'),
-      error: (err) => alert(err.error?.message || 'Already connected or pending')
-    });
+    alert('Connection request sent!');
   }
 
-  toggleLike(post: Post) {
-    if (post.likedByCurrentUser) {
-      this.postService.unlikePost(post.id).subscribe(res => {
-        post.likedByCurrentUser = false;
-        post.likeCount = res.data.likeCount;
-      });
-    } else {
-      this.postService.likePost(post.id).subscribe(res => {
-        post.likedByCurrentUser = true;
-        post.likeCount = res.data.likeCount;
-      });
-    }
->>>>>>> 024a8670ed5f87238d612fc64a122d7d5c4893b4
+  // ================= LIKE =================
+  toggleLike(post: any) {
+    post.likedByCurrentUser = !post.likedByCurrentUser;
+    post.likeCount =
+      (post.likeCount || 0) + (post.likedByCurrentUser ? 1 : -1);
   }
 }

@@ -73,7 +73,7 @@ public class AuthService {
         String token = tokenProvider.generateToken(authentication);
 
         User user = userRepository.findByUsernameOrEmail(
-                request.getUsernameOrEmail(), request.getUsernameOrEmail())
+                        request.getUsernameOrEmail(), request.getUsernameOrEmail())
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
         logger.info("User logged in: {}", user.getUsername());
@@ -103,5 +103,5 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    }
+}
 
