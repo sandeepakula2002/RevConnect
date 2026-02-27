@@ -28,8 +28,6 @@ import { NotificationListComponent } from './features/notifications/notification
 
 // Shared
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
-import { Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
 
 @NgModule({
   declarations: [
@@ -50,9 +48,7 @@ import { CommonModule } from '@angular/common';
     AppRoutingModule,
     HttpClientModule,
     FormsModule,
-    ReactiveFormsModule,
-    RouterModule,
-    CommonModule
+    ReactiveFormsModule
   ],
   providers: [
     {
