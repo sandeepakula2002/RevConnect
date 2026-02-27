@@ -6,9 +6,6 @@ import com.revconnect.post.dto.PostDtos;
 import com.revconnect.post.repository.PostRepository;
 import com.revconnect.user.model.User;
 import com.revconnect.user.service.UserService;
-
-import org.springframework.transaction.annotation.Transactional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,10 +21,8 @@ public class FeedService {
     @Autowired private ConnectionRepository connectionRepository;
     @Autowired private FollowRepository followRepository;
     @Autowired private UserService userService;
+    @Autowired private PostService postService;
 
-
-    // Get feed posts for a user (own + connections + following)
-    @Transactional(readOnly = true)
     public Page<PostDtos.PostResponse> getFeed(String username, int page, int size) {
         User user = userService.getUserByUsername(username);
 
