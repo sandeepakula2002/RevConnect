@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
-import { ApiResponse, PageResponse, Post } from '../../shared/models/models';
 import { PostService } from '../../core/services/post.service';
 import { AuthService } from '../../core/services/auth.service';
+import { Post } from '../../shared/models/models';
 
 @Component({
   selector: 'app-feed-page',
@@ -13,8 +11,10 @@ export class FeedPageComponent implements OnInit {
 
   posts: Post[] = [];
   loading = true;
+
   page = 0;
   totalPages = 0;
+
   currentUserId: number | null;
 
   newPostContent = '';
@@ -22,22 +22,24 @@ export class FeedPageComponent implements OnInit {
   creatingPost = false;
 
   constructor(
-    private http: HttpClient,
     private postService: PostService,
     private authService: AuthService
   ) {
     this.currentUserId = authService.getCurrentUserId();
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadFeed();
   }
 
-  loadFeed() {
+  // =============================
+  // LOAD FEED
+  // =============================
+
+  loadFeed(): void {
     this.loading = true;
-    this.http.get<ApiResponse<PageResponse<Post>>>(
-      `${environment.apiUrl}/feed?page=${this.page}&size=10`
-    ).subscribe({
+
+    this.postService.getFeed(this.page, 10).subscribe({
       next: (res) => {
         this.posts = res.data.content;
         this.totalPages = res.data.totalPages;
@@ -47,8 +49,23 @@ export class FeedPageComponent implements OnInit {
     });
   }
 
-  createPost() {
+  loadMore(): void {
+    if (this.page >= this.totalPages - 1) return;
+
+    this.page++;
+
+    this.postService.getFeed(this.page, 10).subscribe(res => {
+      this.posts = [...this.posts, ...res.data.content];
+    });
+  }
+
+  // =============================
+  // CREATE POST
+  // =============================
+
+  createPost(): void {
     if (!this.newPostContent.trim()) return;
+
     this.creatingPost = true;
 
     this.postService.createPost({
@@ -65,36 +82,45 @@ export class FeedPageComponent implements OnInit {
     });
   }
 
-  toggleLike(post: Post) {
-    if (post.likedByCurrentUser) {
-      this.postService.unlikePost(post.id).subscribe(res => {
-        post.likedByCurrentUser = false;
+  // =============================
+  // LIKE
+  // =============================
+
+  toggleLike(post: Post): void {
+
+    const previousState = post.likedByCurrentUser;
+    const previousCount = post.likeCount;
+
+    // Optimistic update
+    post.likedByCurrentUser = !previousState;
+    post.likeCount += previousState ? -1 : 1;
+
+    const request = previousState
+      ? this.postService.unlikePost(post.id)
+      : this.postService.likePost(post.id);
+
+    request.subscribe({
+      next: (res) => {
+        post.likedByCurrentUser = res.data.liked;
         post.likeCount = res.data.likeCount;
-      });
-    } else {
-      this.postService.likePost(post.id).subscribe(res => {
-        post.likedByCurrentUser = true;
-        post.likeCount = res.data.likeCount;
-      });
-    }
+      },
+      error: () => {
+        post.likedByCurrentUser = previousState;
+        post.likeCount = previousCount;
+      }
+    });
   }
 
-  deletePost(post: Post, index: number) {
-    if (confirm('Delete this post?')) {
-      this.postService.deletePost(post.id).subscribe(() => {
-        this.posts.splice(index, 1);
-      });
-    }
-  }
+  // =============================
+  // DELETE
+  // =============================
 
-  loadMore() {
-    if (this.page < this.totalPages - 1) {
-      this.page++;
-      this.http.get<ApiResponse<PageResponse<Post>>>(
-        `${environment.apiUrl}/feed?page=${this.page}&size=10`
-      ).subscribe(res => {
-        this.posts = [...this.posts, ...res.data.content];
-      });
-    }
+  deletePost(post: Post, index: number): void {
+
+    if (!confirm('Are you sure you want to delete this post?')) return;
+
+    this.postService.deletePost(post.id).subscribe(() => {
+      this.posts.splice(index, 1);
+    });
   }
 }
