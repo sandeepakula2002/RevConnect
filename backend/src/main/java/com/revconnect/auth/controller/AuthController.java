@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -29,5 +30,16 @@ public class AuthController {
             @Valid @RequestBody AuthDtos.LoginRequest request) {
         AuthDtos.AuthResponse response = authService.login(request);
         return ResponseEntity.ok(ApiResponse.success("Login successful", response));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> req) {
+
+        String email = req.get("email");
+        String password = req.get("password");
+
+        authService.resetPasswordDirect(email, password);
+
+        return ResponseEntity.ok("Password reset successful");
     }
 }

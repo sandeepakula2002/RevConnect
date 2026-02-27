@@ -60,6 +60,8 @@ public class User {
     @Column(length = 100)
     private String location;
 
+
+
     @Column(length = 200)
     private String website;
 

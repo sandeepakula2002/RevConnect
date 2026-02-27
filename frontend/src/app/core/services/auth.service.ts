@@ -21,7 +21,6 @@ export class AuthService {
 
   register(request: RegisterRequest): Observable<ApiResponse<AuthResponse>> {
     return this.http.post<ApiResponse<AuthResponse>>(`${this.API}/register`, request).pipe(
-      tap(res => this.storeSession(res.data))
     );
   }
 
@@ -87,4 +86,10 @@ export class AuthService {
     const role = this.getUserRole();
     return role === 'BUSINESS' || role === 'CREATOR';
   }
+forgotPassword(data: any) {
+  return this.http.post(
+    'http://localhost:8080/api/auth/forgot-password',
+    data
+  );
+}
 }

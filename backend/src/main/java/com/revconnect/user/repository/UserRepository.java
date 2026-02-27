@@ -33,13 +33,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.role = :role")
     long countByRole(@Param("role") UserRole role);
-    
-    // ========== NEW METHOD FOR RANDOM USERS ==========
-    
-    /**
-     * Get random users for suggestions
-     * Using native query for MySQL RAND() function
-     */
-    @Query(value = "SELECT * FROM users ORDER BY RAND() LIMIT :limit", nativeQuery = true)
-    List<User> findRandomUsers(@Param("limit") int limit);
 }
