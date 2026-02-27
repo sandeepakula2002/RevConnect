@@ -12,7 +12,7 @@ import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 
 // Feed
-import { FeedPageComponent } from './features/feed/feed-page/feed-page.component';
+import { FeedPageComponent } from './features/feed-page/feed-page.component';
 
 // Users
 import { ProfileViewComponent } from './features/users/profile-view/profile-view.component';
@@ -26,6 +26,8 @@ import { NotificationListComponent } from './features/notifications/notification
 
 // Shared Components
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @NgModule({
   declarations: [
@@ -45,6 +47,8 @@ import { NavbarComponent } from './shared/components/navbar/navbar.component';
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
+    RouterModule,
+    CommonModule
   ],
   providers: [
     {

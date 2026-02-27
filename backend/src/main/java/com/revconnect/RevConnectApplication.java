@@ -16,7 +16,6 @@ public class RevConnectApplication {
         SpringApplication.run(RevConnectApplication.class, args);
         logger.info("==============================================");
         logger.info("   RevConnect Application Started!");
-        logger.info("   API Base URL: http://localhost:8080/api");
         logger.info("==============================================");
     }
 }

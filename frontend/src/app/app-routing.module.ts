@@ -7,7 +7,7 @@ import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 
 // Feed
-import { FeedPageComponent } from './features/feed/feed-page/feed-page.component';
+import { FeedPageComponent } from './features/feed-page/feed-page.component';
 
 // Users
 import { ProfileViewComponent } from './features/users/profile-view/profile-view.component';

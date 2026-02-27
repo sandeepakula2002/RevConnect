@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
-import { ApiResponse, PageResponse, Post } from '../../../shared/models/models';
-import { PostService } from '../../../core/services/post.service';
-import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../environments/environment';
+import { ApiResponse, PageResponse, Post } from '../../shared/models/models';
+import { PostService } from '../../core/services/post.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-feed-page',
