@@ -9,7 +9,9 @@ import com.revconnect.network.model.Follow;
 import com.revconnect.network.repository.ConnectionRepository;
 import com.revconnect.network.repository.FollowRepository;
 import com.revconnect.notification.service.NotificationService;
+import com.revconnect.user.dto.UserDtos;
 import com.revconnect.user.model.User;
+import com.revconnect.user.repository.UserRepository;
 import com.revconnect.user.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class NetworkService {
@@ -27,6 +31,7 @@ public class NetworkService {
     @Autowired private ConnectionRepository connectionRepository;
     @Autowired private FollowRepository followRepository;
     @Autowired private UserService userService;
+    @Autowired private UserRepository userRepository;
     @Autowired private NotificationService notificationService;
 
     // ─── Connections ─────────────────────────────────────────────────
@@ -94,6 +99,29 @@ public class NetworkService {
     public List<Connection> getSentRequests(String username) {
         User user = userService.getUserByUsername(username);
         return connectionRepository.findByRequesterAndStatus(user, ConnectionStatus.PENDING);
+    }
+
+    // ─── Suggestions ─────────────────────────────────────────────────
+
+    public List<UserDtos.UserResponse> getSuggestedConnections(String currentUsername, int limit) {
+        User currentUser = userService.getUserByUsername(currentUsername);
+
+        List<Long> connectedIds = connectionRepository.findConnectedUserIds(currentUser.getId());
+
+        List<Long> pendingIds = connectionRepository
+                .findByRequesterAndStatus(currentUser, ConnectionStatus.PENDING)
+                .stream().map(c -> c.getAddressee().getId()).collect(Collectors.toList());
+
+        List<Long> allExcluded = new ArrayList<>();
+        allExcluded.add(currentUser.getId());
+        allExcluded.addAll(connectedIds);
+        allExcluded.addAll(pendingIds);
+
+        return userRepository.findAll().stream()
+                .filter(u -> !allExcluded.contains(u.getId()))
+                .limit(limit)
+                .map(UserDtos.UserResponse::from)
+                .collect(Collectors.toList());
     }
 
     // ─── Follow ──────────────────────────────────────────────────────

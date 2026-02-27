@@ -46,20 +46,13 @@ export class ProfileViewComponent implements OnInit {
   }
 
   loadPosts(userId: number) {
-  this.postsLoading = true;
-  this.postService.getUserPosts(userId).subscribe({
-    next: (res) => {
-      console.log("FULL RESPONSE:", JSON.stringify(res));
-      console.log("CONTENT:", res.data?.content);
-      this.posts = res.data.content;
-      this.postsLoading = false;
-    },
-    error: (err) => {
-      console.error("POSTS ERROR:", err);
-      this.postsLoading = false;
-    }
-  });
-}
+    this.postsLoading = true;
+    this.postService.getUserPosts(userId).subscribe({
+      next: (res) => { this.posts = res.data.content; this.postsLoading = false; },
+      error: () => this.postsLoading = false
+    });
+  }
+
   toggleFollow() {
     if (!this.user) return;
     if (this.user.isFollowing) {

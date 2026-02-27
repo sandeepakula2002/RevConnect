@@ -4,6 +4,7 @@ import com.revconnect.common.dto.ApiResponse;
 import com.revconnect.network.model.Connection;
 import com.revconnect.network.model.Follow;
 import com.revconnect.network.service.NetworkService;
+import com.revconnect.user.dto.UserDtos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -72,6 +73,17 @@ public class NetworkController {
             @AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(ApiResponse.success(
                 networkService.getSentRequests(currentUser.getUsername())));
+    }
+
+    // ─── Suggestions ─────────────────────────────────────────────────
+
+    @GetMapping("/suggestions")
+    public ResponseEntity<List<UserDtos.UserResponse>> getSuggestions(
+            @RequestParam(defaultValue = "10") int limit,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        List<UserDtos.UserResponse> suggestions =
+                networkService.getSuggestedConnections(currentUser.getUsername(), limit);
+        return ResponseEntity.ok(suggestions);
     }
 
     // ─── Follow ──────────────────────────────────────────────────────

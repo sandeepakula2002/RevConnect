@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -24,7 +26,7 @@ import { ConnectionsComponent } from './features/network/connections/connections
 // Notifications
 import { NotificationListComponent } from './features/notifications/notification-list/notification-list.component';
 
-// Shared Components
+// Shared
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 
 @NgModule({
@@ -37,14 +39,16 @@ import { NavbarComponent } from './shared/components/navbar/navbar.component';
     ProfileEditComponent,
     ConnectionsComponent,
     NotificationListComponent,
-    NavbarComponent,
+    NavbarComponent
   ],
   imports: [
     BrowserModule,
+    CommonModule,
+    RouterModule,
     AppRoutingModule,
     HttpClientModule,
     FormsModule,
-    ReactiveFormsModule,
+    ReactiveFormsModule
   ],
   providers: [
     {

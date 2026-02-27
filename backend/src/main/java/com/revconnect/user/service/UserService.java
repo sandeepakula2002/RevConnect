@@ -32,8 +32,6 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
     }
 
-    // For internal use (e.g. by other services)
-    @Transactional(readOnly = true)
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", id));
@@ -56,6 +54,7 @@ public class UserService {
         // Is the current user following / connected?
         response.setFollowing(followRepository.existsByFollowerAndFollowing(currentUser, target));
         response.setConnected(connectedIds.contains(currentUser.getId()));
+
         return response;
     }
 
@@ -95,6 +94,33 @@ public class UserService {
                     r.setFollowerCount(followRepository.countByFollowing(u));
                     return r;
                 })
+                .collect(Collectors.toList());
+    }
+
+    // ========== NEW METHOD FOR NETWORK SUGGESTIONS ==========
+    
+    /**
+     * Find users excluding a list of IDs (for connection suggestions)
+     * @param excludedIds List of user IDs to exclude
+     * @param limit Maximum number of users to return
+     * @return List of users not in the excluded IDs
+     */
+    public List<User> findUsersExcludingIds(List<Long> excludedIds, int limit) {
+        logger.debug("Finding users excluding {} IDs with limit: {}", 
+                     excludedIds != null ? excludedIds.size() : 0, limit);
+        
+        if (excludedIds == null || excludedIds.isEmpty()) {
+            // If no IDs to exclude, return random users
+            return userRepository.findRandomUsers(limit);
+        }
+        
+        // Get all users and filter in memory (simpler approach that will work)
+        // This is less efficient but will work immediately
+        List<User> allUsers = userRepository.findAll();
+        
+        return allUsers.stream()
+                .filter(user -> !excludedIds.contains(user.getId()))
+                .limit(limit)
                 .collect(Collectors.toList());
     }
 }
