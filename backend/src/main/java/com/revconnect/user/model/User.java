@@ -10,8 +10,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.revconnect.post.dto.PostDtos;
+import jakarta.persistence.Transient;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -66,6 +69,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private PrivacyType privacy = PrivacyType.PUBLIC;
+
+    @Transient
+    private List<PostDtos.PostResponse> posts;
 
     // ─── Business / Creator Extra Fields ───────────────────────────────
     @Column(length = 150)

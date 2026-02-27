@@ -32,6 +32,8 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
     }
 
+    // For internal use (e.g. by other services)
+    @Transactional(readOnly = true)
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", id));
@@ -54,7 +56,6 @@ public class UserService {
         // Is the current user following / connected?
         response.setFollowing(followRepository.existsByFollowerAndFollowing(currentUser, target));
         response.setConnected(connectedIds.contains(currentUser.getId()));
-
         return response;
     }
 

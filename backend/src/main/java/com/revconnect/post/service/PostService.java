@@ -10,14 +10,12 @@ import com.revconnect.post.model.Post;
 import com.revconnect.post.model.PostType;
 import com.revconnect.post.repository.PostRepository;
 import com.revconnect.user.model.User;
-import com.revconnect.user.repository.UserRepository;
 import com.revconnect.user.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +61,7 @@ public class PostService {
         return buildPostResponse(saved, user);
     }
 
+    // Get post details (for feed, profile, post page)
     public PostDtos.PostResponse getPost(Long postId, String username) {
         User user = userService.getUserByUsername(username);
         Post post = postRepository.findById(postId)
@@ -71,6 +70,7 @@ public class PostService {
         return buildPostResponse(post, user);
     }
 
+    // Update and delete only allowed for post owner
     @Transactional
     public PostDtos.PostResponse updatePost(Long postId, PostDtos.UpdatePostRequest request, String username) {
         Post post = postRepository.findById(postId)
@@ -88,6 +88,7 @@ public class PostService {
         return buildPostResponse(updated, post.getUser());
     }
 
+    //  Delete post
     @Transactional
     public void deletePost(Long postId, String username) {
         Post post = postRepository.findById(postId)
@@ -100,14 +101,28 @@ public class PostService {
         logger.info("Post {} deleted by {}", postId, username);
     }
 
-    public Page<PostDtos.PostResponse> getUserPosts(Long userId, int page, int size, String currentUsername) {
-        User user = userService.getUserById(userId);
-        User currentUser = userService.getUserByUsername(currentUsername);
-        return postRepository.findByUserAndPublishedTrueOrderByPinnedDescCreatedAtDesc(
-                user, PageRequest.of(page, size))
-                .map(p -> buildPostResponse(p, currentUser));
+    // Posts by user (profile page)
+    @Transactional(readOnly = true)
+  public Page<PostDtos.PostResponse> getUserPosts(Long userId, int page, int size, String currentUsername) {
+
+    User user = userService.getUserById(userId);
+
+    User currentUser;
+    try {
+        currentUser = userService.getUserByUsername(currentUsername);
+    } catch (Exception e) {
+        currentUser = user;
     }
 
+    final User finalCurrentUser = currentUser;
+
+   return postRepository
+        .findUserPosts(userId, PageRequest.of(page, size))
+        .map(p -> buildPostResponse(p, finalCurrentUser));
+}
+    
+
+    // Feed: posts from connections + following + own
     public List<PostDtos.PostResponse> getTrendingPosts(String username) {
         User user = userService.getUserByUsername(username);
         return postRepository.findTrendingPosts(PageRequest.of(0, 20)).stream()
@@ -115,6 +130,7 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    // Search by hashtag
     public Page<PostDtos.PostResponse> searchByHashtag(String hashtag, int page, int size, String username) {
         User user = userService.getUserByUsername(username);
         return postRepository.findByHashtag(hashtag, PageRequest.of(page, size))
@@ -145,14 +161,22 @@ public class PostService {
 
     // ─── Private helper ──────────────────────────────────────────────
     private PostDtos.PostResponse buildPostResponse(Post post, User currentUser) {
-        PostDtos.PostResponse response = PostDtos.PostResponse.from(post);
-        response.setLikeCount(likeRepository.countByPost(post));
-        response.setCommentCount(commentRepository.countByPost(post));
-        response.setLikedByCurrentUser(likeRepository.existsByPostAndUser(post, currentUser));
 
-        if (post.getOriginalPost() != null) {
-            response.setOriginalPost(PostDtos.PostResponse.from(post.getOriginalPost()));
-        }
-        return response;
+    PostDtos.PostResponse response = PostDtos.PostResponse.from(post);
+    response.setLikeCount(likeRepository.countByPost(post));
+    response.setCommentCount(commentRepository.countByPost(post));
+    if(currentUser != null) {
+        response.setLikedByCurrentUser(
+            likeRepository.existsByPostAndUser(post, currentUser)
+        );
+    } else {
+        response.setLikedByCurrentUser(false);
     }
+    if (post.getOriginalPost() != null) {
+        response.setOriginalPost(
+            PostDtos.PostResponse.from(post.getOriginalPost())
+        );
+    }
+    return response;
+}
 }

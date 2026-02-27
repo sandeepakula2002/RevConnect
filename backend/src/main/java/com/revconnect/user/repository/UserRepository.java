@@ -1,5 +1,6 @@
 package com.revconnect.user.repository;
 
+import com.revconnect.post.model.Post;
 import com.revconnect.user.model.User;
 import com.revconnect.user.model.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;

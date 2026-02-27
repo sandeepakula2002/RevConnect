@@ -16,7 +16,8 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Long> {
 
     // Posts by user (profile page)
-    Page<Post> findByUserAndPublishedTrueOrderByPinnedDescCreatedAtDesc(User user, Pageable pageable);
+    @Query("SELECT p FROM Post p WHERE p.user.id = :userId ORDER BY p.createdAt DESC")
+       Page<Post> findUserPosts(@Param("userId") Long userId, Pageable pageable);
 
     // Feed: posts from connections + following + own
     @Query("SELECT p FROM Post p WHERE p.published = true AND p.scheduledAt IS NULL AND " +
@@ -42,4 +43,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // Count posts by user (analytics)
     long countByUser(User user);
+
+    List<Post> findByUser(User user);
+
+    Page<Post> findByUser(User user, Pageable pageable);
+
+
 }

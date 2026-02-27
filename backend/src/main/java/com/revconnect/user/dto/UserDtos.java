@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
+import com.revconnect.post.dto.PostDtos;
 
 import java.time.LocalDateTime;
 
