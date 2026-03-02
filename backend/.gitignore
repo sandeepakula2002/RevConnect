@@ -1,4 +1,9 @@
+.idea/
 logs/
 backend/logs/
+backend/target/
 *.log
 *.gz
+*.class
+node_modules/
+dist/
