@@ -13,8 +13,9 @@ import { UserService } from '../../core/services/user.service';
 })
 export class FeedPageComponent implements OnInit {
 
-  // ================= FEED =================
-  posts: Post[] = [];
+  //  use any[] to allow UI properties (important fix)
+  posts: any[] = [];
+
   loading = true;
   page = 0;
   totalPages = 0;
@@ -24,7 +25,7 @@ export class FeedPageComponent implements OnInit {
   newPostHashtags = '';
   creatingPost = false;
 
-  // ================= SEARCH =================
+  // SEARCH
   searchQuery: string = '';
   users: any[] = [];
 
@@ -41,7 +42,7 @@ export class FeedPageComponent implements OnInit {
     this.loadFeed();
   }
 
-  // ================= FEED LOGIC =================
+  // ================= LOAD FEED =================
   loadFeed() {
     this.loading = true;
 
@@ -49,7 +50,15 @@ export class FeedPageComponent implements OnInit {
       `${environment.apiUrl}/feed?page=${this.page}&size=10`
     ).subscribe({
       next: (res) => {
-        this.posts = res.data.content;
+
+        // add UI fields safely
+        this.posts = res.data.content.map((post: any) => ({
+          ...post,
+          showComments: false,
+          newComment: '',
+          comments: post.comments || []
+        }));
+
         this.totalPages = res.data.totalPages;
         this.loading = false;
       },
@@ -57,7 +66,9 @@ export class FeedPageComponent implements OnInit {
     });
   }
 
+  // ================= CREATE POST =================
   createPost() {
+
     if (!this.newPostContent.trim()) return;
 
     this.creatingPost = true;
@@ -67,7 +78,16 @@ export class FeedPageComponent implements OnInit {
       hashtags: this.newPostHashtags
     }).subscribe({
       next: (res) => {
-        this.posts.unshift(res.data);
+
+        const newPost = {
+          ...res.data,
+          showComments: false,
+          newComment: '',
+          comments: []
+        };
+
+        this.posts.unshift(newPost);
+
         this.newPostContent = '';
         this.newPostHashtags = '';
         this.creatingPost = false;
@@ -76,7 +96,9 @@ export class FeedPageComponent implements OnInit {
     });
   }
 
-  toggleLike(post: Post) {
+  // ================= LIKE =================
+  toggleLike(post: any) {
+
     if (post.likedByCurrentUser) {
       this.postService.unlikePost(post.id).subscribe(res => {
         post.likedByCurrentUser = false;
@@ -90,7 +112,21 @@ export class FeedPageComponent implements OnInit {
     }
   }
 
-  deletePost(post: Post, index: number) {
+  // ================= ADD COMMENT (UI ONLY) =================
+  addComment(post: any) {
+
+    if (!post.newComment?.trim()) return;
+
+    post.comments.push({
+      username: 'You',
+      text: post.newComment
+    });
+
+    post.newComment = '';
+  }
+
+  // ================= DELETE =================
+  deletePost(post: any, index: number) {
     if (confirm('Delete this post?')) {
       this.postService.deletePost(post.id).subscribe(() => {
         this.posts.splice(index, 1);
@@ -98,32 +134,40 @@ export class FeedPageComponent implements OnInit {
     }
   }
 
+  // ================= LOAD MORE =================
   loadMore() {
+
     if (this.page < this.totalPages - 1) {
+
       this.page++;
 
       this.http.get<ApiResponse<PageResponse<Post>>>(
         `${environment.apiUrl}/feed?page=${this.page}&size=10`
       ).subscribe(res => {
-        this.posts = [...this.posts, ...res.data.content];
+
+        const newPosts = res.data.content.map((post: any) => ({
+          ...post,
+          showComments: false,
+          newComment: '',
+          comments: post.comments || []
+        }));
+
+        this.posts = [...this.posts, ...newPosts];
       });
     }
   }
 
-  // ================= SEARCH LOGIC =================
+  // ================= SEARCH =================
   searchUsers() {
+
     if (!this.searchQuery.trim()) {
       this.users = [];
       return;
     }
 
     this.userService.searchUsers(this.searchQuery).subscribe({
-      next: (res) => {
-        this.users = res.data;
-      },
-      error: (err) => {
-        console.error('Search failed', err);
-      }
+      next: (res) => this.users = res.data,
+      error: (err) => console.error('Search failed', err)
     });
   }
 }

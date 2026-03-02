@@ -28,7 +28,7 @@ const routes: Routes = [
 
   // Protected routes
   { path: 'feed',              component: FeedPageComponent,       canActivate: [AuthGuard] },
-  { path: 'profile/',       component: ProfileViewComponent,    canActivate: [AuthGuard] },
+  { path: 'profile/:id',       component: ProfileViewComponent,    canActivate: [AuthGuard] },
   { path: 'profile/:id/edit',  component: ProfileEditComponent,    canActivate: [AuthGuard] },
   { path: 'network',           component: ConnectionsComponent,    canActivate: [AuthGuard] },
   { path: 'notifications',     component: NotificationListComponent, canActivate: [AuthGuard] },
