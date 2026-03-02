@@ -12,7 +12,7 @@ public class RevConnectApplication {
 
     private static final Logger logger = LogManager.getLogger(RevConnectApplication.class);
 
-          public static void main(String[] args) {
+    public static void main(String[] args) {
         SpringApplication.run(RevConnectApplication.class, args);
         logger.info("==============================================");
         logger.info("   RevConnect Application Started!");

@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-
-import { environment } from '../../../environments/environment';
-import { ApiResponse, PageResponse, Post } from '../../shared/models/models';
-import { PostService } from '../../core/services/post.service';
-import { AuthService } from '../../core/services/auth.service';
-import { UserService } from '../../core/services/user.service';
-=======
 import { Component, OnInit, HostListener } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
@@ -16,7 +6,6 @@ import { PostService } from '../../core/services/post.service';
 import { UserService } from '../../core/services/user.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Post, PageResponse, ApiResponse } from '../../shared/models/models';
->>>>>>> 357a03b3b2746b616d126e6ba6913e7a1053d827
 
 @Component({
   selector: 'app-feed-page',
@@ -24,15 +13,6 @@ import { Post, PageResponse, ApiResponse } from '../../shared/models/models';
 })
 export class FeedPageComponent implements OnInit {
 
-<<<<<<< HEAD
-  //  use any[] to allow UI properties (important fix)
-  posts: any[] = [];
-
-  loading = true;
-  page = 0;
-  totalPages = 0;
-  currentUserId: number | null;
-=======
   posts: (Post & {
     showComments?: boolean;
     newComment?: string;
@@ -45,57 +25,11 @@ export class FeedPageComponent implements OnInit {
   lastPage = false;
 
   currentUserId: number | null = null;
->>>>>>> 357a03b3b2746b616d126e6ba6913e7a1053d827
 
   newPostContent = '';
   newPostHashtags = '';
   creatingPost = false;
 
-<<<<<<< HEAD
-  // SEARCH
-  searchQuery: string = '';
-  users: any[] = [];
-
-  constructor(
-    private http: HttpClient,
-    private postService: PostService,
-    private authService: AuthService,
-    private userService: UserService
-  ) {
-    this.currentUserId = this.authService.getCurrentUserId();
-  }
-
-  ngOnInit() {
-    this.loadFeed();
-  }
-
-  // ================= LOAD FEED =================
-  loadFeed() {
-    this.loading = true;
-
-    this.http.get<ApiResponse<PageResponse<Post>>>(
-      `${environment.apiUrl}/feed?page=${this.page}&size=10`
-    ).subscribe({
-      next: (res) => {
-
-        // add UI fields safely
-        this.posts = res.data.content.map((post: any) => ({
-          ...post,
-          showComments: false,
-          newComment: '',
-          comments: post.comments || []
-        }));
-
-        this.totalPages = res.data.totalPages;
-        this.loading = false;
-      },
-      error: () => this.loading = false
-    });
-  }
-
-  // ================= CREATE POST =================
-  createPost() {
-=======
   private searchSubject = new Subject<string>();
   users: any[] = [];
 
@@ -210,7 +144,6 @@ export class FeedPageComponent implements OnInit {
 
   // ================= CREATE POST =================
   createPost(): void {
->>>>>>> 357a03b3b2746b616d126e6ba6913e7a1053d827
 
     if (!this.newPostContent.trim()) return;
 
@@ -222,22 +155,12 @@ export class FeedPageComponent implements OnInit {
     }).subscribe({
       next: (res) => {
 
-<<<<<<< HEAD
-        const newPost = {
-=======
         this.posts.unshift({
->>>>>>> 357a03b3b2746b616d126e6ba6913e7a1053d827
           ...res.data,
           showComments: false,
           newComment: '',
           comments: []
-<<<<<<< HEAD
-        };
-
-        this.posts.unshift(newPost);
-=======
         });
->>>>>>> 357a03b3b2746b616d126e6ba6913e7a1053d827
 
         this.newPostContent = '';
         this.newPostHashtags = '';
@@ -248,19 +171,6 @@ export class FeedPageComponent implements OnInit {
   }
 
   // ================= LIKE =================
-<<<<<<< HEAD
-  toggleLike(post: any) {
-
-    if (post.likedByCurrentUser) {
-      this.postService.unlikePost(post.id).subscribe(res => {
-        post.likedByCurrentUser = false;
-        post.likeCount = res.data.likeCount;
-      });
-    } else {
-      this.postService.likePost(post.id).subscribe(res => {
-        post.likedByCurrentUser = true;
-        post.likeCount = res.data.likeCount;
-=======
   toggleLike(post: any): void {
 
     if (post.likedByCurrentUser) {
@@ -275,62 +185,10 @@ export class FeedPageComponent implements OnInit {
       this.postService.likePost(post.id).subscribe(() => {
         post.likedByCurrentUser = true;
         post.likeCount++;
->>>>>>> 357a03b3b2746b616d126e6ba6913e7a1053d827
       });
     }
   }
 
-<<<<<<< HEAD
-  // ================= ADD COMMENT (UI ONLY) =================
-  addComment(post: any) {
-
-    if (!post.newComment?.trim()) return;
-
-    post.comments.push({
-      username: 'You',
-      text: post.newComment
-    });
-
-    post.newComment = '';
-  }
-
-  // ================= DELETE =================
-  deletePost(post: any, index: number) {
-    if (confirm('Delete this post?')) {
-      this.postService.deletePost(post.id).subscribe(() => {
-        this.posts.splice(index, 1);
-      });
-    }
-  }
-
-  // ================= LOAD MORE =================
-  loadMore() {
-
-    if (this.page < this.totalPages - 1) {
-
-      this.page++;
-
-      this.http.get<ApiResponse<PageResponse<Post>>>(
-        `${environment.apiUrl}/feed?page=${this.page}&size=10`
-      ).subscribe(res => {
-
-        const newPosts = res.data.content.map((post: any) => ({
-          ...post,
-          showComments: false,
-          newComment: '',
-          comments: post.comments || []
-        }));
-
-        this.posts = [...this.posts, ...newPosts];
-      });
-    }
-  }
-
-  // ================= SEARCH =================
-  searchUsers() {
-
-    if (!this.searchQuery.trim()) {
-=======
   // ================= COMMENTS =================
   loadComments(post: any): void {
 
@@ -361,18 +219,10 @@ export class FeedPageComponent implements OnInit {
   onSearchInput(value: string): void {
 
     if (!value.trim()) {
->>>>>>> 357a03b3b2746b616d126e6ba6913e7a1053d827
       this.users = [];
       return;
     }
 
-<<<<<<< HEAD
-    this.userService.searchUsers(this.searchQuery).subscribe({
-      next: (res) => this.users = res.data,
-      error: (err) => console.error('Search failed', err)
-    });
-=======
     this.searchSubject.next(value);
->>>>>>> 357a03b3b2746b616d126e6ba6913e7a1053d827
   }
 }
