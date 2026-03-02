@@ -79,6 +79,10 @@ export interface Post {
   originalPost?: Post;
   createdAt: string;
   updatedAt: string;
+
+  //  Add recently
+  comments?: Comment[];
+  newComment?: string;
 }
 
 export interface CreatePostRequest {

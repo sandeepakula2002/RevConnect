@@ -45,7 +45,7 @@ public class AuthService {
 
         User user = User.builder()
                 .username(request.getUsername())
-                .email(request.getEmail())
+                .email(request.getEmail().trim().toLowerCase())
                 .password(passwordEncoder.encode(request.getPassword()))   // BCrypt encrypted
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -62,6 +62,7 @@ public class AuthService {
         );
     }
 
+
     public AuthDtos.AuthResponse login(AuthDtos.LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -72,7 +73,7 @@ public class AuthService {
         String token = tokenProvider.generateToken(authentication);
 
         User user = userRepository.findByUsernameOrEmail(
-                request.getUsernameOrEmail(), request.getUsernameOrEmail())
+                        request.getUsernameOrEmail(), request.getUsernameOrEmail())
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
         logger.info("User logged in: {}", user.getUsername());
@@ -80,5 +81,27 @@ public class AuthService {
                 token, user.getId(), user.getUsername(),
                 user.getEmail(), user.getRole().name(), user.getProfilePicture()
         );
+
     }
+    // ================= FORGOT PASSWORD (DEMO RESET) =================
+    @Transactional
+    public void resetPasswordDirect(String email, String newPassword) {
+
+        System.out.println("EMAIL RECEIVED FROM FRONTEND = [" + email + "]");
+
+        String normalizedEmail =
+                email == null ? "" : email.trim().toLowerCase();
+
+        System.out.println("NORMALIZED EMAIL = [" + normalizedEmail + "]");
+
+        User user = userRepository
+                .findByEmailIgnoreCase(normalizedEmail)
+                .orElseThrow(() ->
+                        new BadRequestException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
 }
+

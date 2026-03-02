@@ -1,0 +1,134 @@
+<div class="container py-4">
+  <h4 class="fw-bold mb-4">👥 My Network</h4>
+
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="tab==='discover'" (click)="tab='discover'">
+        Discover People ({{ allUsers.length }})
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="tab==='connections'" (click)="tab='connections'">
+        Connections ({{ connections.length }})
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="tab==='received'" (click)="tab='received'">
+        Requests ({{ pendingRequests.length }})
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="tab==='sent'" (click)="tab='sent'">
+        Sent
+      </button>
+    </li>
+  </ul>
+
+  <!-- Discover Tab -->
+  <div *ngIf="tab === 'discover'">
+    <p class="text-muted" *ngIf="allUsers.length === 0">No suggestions available.</p>
+    <div class="row g-3">
+      <div class="col-md-4" *ngFor="let user of allUsers">
+        <div class="card shadow-sm h-100">
+          <div class="card-body text-center">
+            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center mx-auto mb-2"
+                 style="width:50px;height:50px;">👤</div>
+
+            <h6 class="fw-bold mb-0">{{ user.fullName || user.username }}</h6>
+            <small class="text-muted">@{{ user.username }}</small>
+
+            <div class="mt-2 d-flex gap-2 justify-content-center">
+              <a [routerLink]="['/profile', user.id]"
+                 class="btn btn-sm btn-outline-primary">View</a>
+
+              <button class="btn btn-sm btn-primary"
+                      (click)="sendRequest(user)"
+                      [disabled]="sentUserIds.has(user.id)">
+                {{ sentUserIds.has(user.id) ? 'Sent ✓' : 'Connect' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connections Tab -->
+  <div *ngIf="tab === 'connections'">
+    <p class="text-muted" *ngIf="connections.length === 0">No connections yet.</p>
+    <div class="row g-3">
+      <div class="col-md-4" *ngFor="let c of connections">
+        <div class="card shadow-sm h-100">
+          <div class="card-body text-center">
+            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-2"
+                 style="width:50px;height:50px;">👤</div>
+
+            <h6 class="fw-bold mb-0">
+              {{ getOtherUser(c).fullName || getOtherUser(c).username }}
+            </h6>
+            <small class="text-muted">
+              @{{ getOtherUser(c).username }}
+            </small>
+
+            <div class="mt-2 d-flex gap-2 justify-content-center">
+              <a [routerLink]="['/profile', getOtherUser(c).id]"
+                 class="btn btn-sm btn-outline-primary">View</a>
+
+              <button class="btn btn-sm btn-outline-danger"
+                      (click)="removeConnection(c)">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Received Requests -->
+  <div *ngIf="tab === 'received'">
+    <p class="text-muted" *ngIf="pendingRequests.length === 0">
+      No pending requests.
+    </p>
+
+    <div class="list-group shadow-sm">
+      <div class="list-group-item d-flex align-items-center gap-3"
+           *ngFor="let r of pendingRequests">
+
+        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+             style="width:42px;height:42px;">👤</div>
+
+        <div class="flex-grow-1">
+          <strong>{{ r.requester.fullName || r.requester.username }}</strong>
+          <div class="text-muted small">@{{ r.requester.username }}</div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-success" (click)="accept(r)">Accept</button>
+          <button class="btn btn-sm btn-outline-danger" (click)="reject(r)">Reject</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sent Requests -->
+  <div *ngIf="tab === 'sent'">
+    <p class="text-muted" *ngIf="sentRequests.length === 0">
+      No sent requests.
+    </p>
+
+    <div class="list-group shadow-sm">
+      <div class="list-group-item d-flex align-items-center gap-3"
+           *ngFor="let r of sentRequests">
+
+        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+             style="width:42px;height:42px;">👤</div>
+
+        <div class="flex-grow-1">
+          <strong>{{ r.addressee.fullName || r.addressee.username }}</strong>
+          <div class="text-muted small">Pending</div>
+        </div>
+
+        <span class="badge bg-warning text-dark">Pending</span>
+      </div>
+    </div>
+  </div>
+</div>

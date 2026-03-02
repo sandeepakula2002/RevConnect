@@ -11,19 +11,32 @@ export class UserService {
 
   constructor(private http: HttpClient) {}
 
+  // ================= CURRENT USER =================
   getCurrentUser(): Observable<ApiResponse<User>> {
     return this.http.get<ApiResponse<User>>(`${this.API}/me`);
   }
 
+  // ================= GET BY ID =================
   getUserById(id: number): Observable<ApiResponse<User>> {
     return this.http.get<ApiResponse<User>>(`${this.API}/${id}`);
   }
 
-  updateProfile(id: number, data: Partial<User>): Observable<ApiResponse<User>> {
-    return this.http.put<ApiResponse<User>>(`${this.API}/${id}`, data);
+  // ================= UPDATE PROFILE =================
+  updateProfile(
+    id: number,
+    data: Partial<User>
+  ): Observable<ApiResponse<User>> {
+
+    return this.http.put<ApiResponse<User>>(
+      `${this.API}/${id}`,
+      data
+    );
   }
 
+  // ================= SEARCH USERS =================
   searchUsers(query: string): Observable<ApiResponse<User[]>> {
-    return this.http.get<ApiResponse<User[]>>(`${this.API}/search?q=${query}`);
+    return this.http.get<ApiResponse<User[]>>(
+      `${this.API}/search?q=${query}`
+    );
   }
 }

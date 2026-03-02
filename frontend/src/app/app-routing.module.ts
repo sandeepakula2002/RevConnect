@@ -7,7 +7,7 @@ import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 
 // Feed
-import { FeedPageComponent } from './features/feed/feed-page/feed-page.component';
+import { FeedPageComponent } from './features/feed-page/feed-page.component';
 
 // Users
 import { ProfileViewComponent } from './features/users/profile-view/profile-view.component';
@@ -20,21 +20,32 @@ import { ConnectionsComponent } from './features/network/connections/connections
 import { NotificationListComponent } from './features/notifications/notification-list/notification-list.component';
 
 const routes: Routes = [
+
   { path: '', redirectTo: '/feed', pathMatch: 'full' },
 
-  // Auth routes (guests only)
-  { path: 'login',    component: LoginComponent,    canActivate: [GuestGuard] },
+  // Auth
+  { path: 'login', component: LoginComponent, canActivate: [GuestGuard] },
   { path: 'register', component: RegisterComponent, canActivate: [GuestGuard] },
 
-  // Protected routes
-  { path: 'feed',              component: FeedPageComponent,       canActivate: [AuthGuard] },
-  { path: 'profile/:id',       component: ProfileViewComponent,    canActivate: [AuthGuard] },
-  { path: 'profile/:id/edit',  component: ProfileEditComponent,    canActivate: [AuthGuard] },
-  { path: 'network',           component: ConnectionsComponent,    canActivate: [AuthGuard] },
-  { path: 'notifications',     component: NotificationListComponent, canActivate: [AuthGuard] },
+  // Main
+  { path: 'feed', component: FeedPageComponent, canActivate: [AuthGuard] },
 
-  // Catch-all
+  // Profile
+  { path: 'profile/:id', component: ProfileViewComponent, canActivate: [AuthGuard] },
+  { path: 'profile/:id/edit', component: ProfileEditComponent, canActivate: [AuthGuard] },
+
+  // Single Post (used when clicking notification)
+  { path: 'post/:id', component: FeedPageComponent, canActivate: [AuthGuard] },
+
+  // Network
+  { path: 'network', component: ConnectionsComponent, canActivate: [AuthGuard] },
+
+  // Notifications
+  { path: 'notifications', component: NotificationListComponent, canActivate: [AuthGuard] },
+
+  // Fallback
   { path: '**', redirectTo: '/feed' }
+
 ];
 
 @NgModule({

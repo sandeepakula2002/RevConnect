@@ -12,6 +12,7 @@ export class RegisterComponent {
   registerForm: FormGroup;
   loading = false;
   error = '';
+  success = '';
 
   constructor(
     private fb: FormBuilder,
@@ -32,11 +33,20 @@ export class RegisterComponent {
 
   onSubmit() {
     if (this.registerForm.invalid) return;
+
     this.loading = true;
     this.error = '';
+    this.success = '';
 
     this.authService.register(this.registerForm.value).subscribe({
-      next: () => this.router.navigate(['/feed']),
+      next: () => {
+        this.loading = false;
+        this.success = 'Registration successful! Please login to continue.';
+
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
+      },
       error: (err) => {
         this.error = err.error?.message || 'Registration failed. Please try again.';
         this.loading = false;

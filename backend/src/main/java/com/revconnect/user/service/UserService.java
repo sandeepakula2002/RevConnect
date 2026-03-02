@@ -96,4 +96,31 @@ public class UserService {
                 })
                 .collect(Collectors.toList());
     }
+
+    // ========== NEW METHOD FOR NETWORK SUGGESTIONS ==========
+    
+    /**
+     * Find users excluding a list of IDs (for connection suggestions)
+     * @param excludedIds List of user IDs to exclude
+     * @param limit Maximum number of users to return
+     * @return List of users not in the excluded IDs
+     */
+    public List<User> findUsersExcludingIds(List<Long> excludedIds, int limit) {
+        logger.debug("Finding users excluding {} IDs with limit: {}", 
+                     excludedIds != null ? excludedIds.size() : 0, limit);
+        
+        if (excludedIds == null || excludedIds.isEmpty()) {
+            // If no IDs to exclude, return random users
+            return userRepository.findRandomUsers(limit);
+        }
+        
+        // Get all users and filter in memory (simpler approach that will work)
+        // This is less efficient but will work immediately
+        List<User> allUsers = userRepository.findAll();
+        
+        return allUsers.stream()
+                .filter(user -> !excludedIds.contains(user.getId()))
+                .limit(limit)
+                .collect(Collectors.toList());
+    }
 }

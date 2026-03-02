@@ -55,4 +55,13 @@ public class NotificationController {
         notificationService.markAllAsRead(user.getId());
         return ResponseEntity.ok(ApiResponse.success("All notifications marked as read", null));
     }
+
+    // FIXED: was returning plain String — now consistent ResponseEntity like all other methods
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteNotification(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        notificationService.deleteNotification(id);
+        return ResponseEntity.ok(ApiResponse.success("Notification deleted", null));
+    }
 }

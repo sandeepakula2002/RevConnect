@@ -25,37 +25,37 @@ public class NotificationService {
 
     public void notifyConnectionRequest(User sender, User recipient) {
         save(sender, recipient, NotificationType.CONNECTION_REQUEST, null,
-             sender.getUsername() + " sent you a connection request");
+                sender.getUsername() + " sent you a connection request");
     }
 
     public void notifyConnectionAccepted(User sender, User recipient) {
         save(sender, recipient, NotificationType.CONNECTION_ACCEPTED, null,
-             sender.getUsername() + " accepted your connection request");
+                sender.getUsername() + " accepted your connection request");
     }
 
     public void notifyNewFollower(User follower, User following) {
         save(follower, following, NotificationType.NEW_FOLLOWER, null,
-             follower.getUsername() + " started following you");
+                follower.getUsername() + " started following you");
     }
 
     public void notifyLike(User liker, Post post) {
         if (!liker.getId().equals(post.getUser().getId())) {  // Don't notify self
             save(liker, post.getUser(), NotificationType.POST_LIKED, post.getId(),
-                 liker.getUsername() + " liked your post");
+                    liker.getUsername() + " liked your post");
         }
     }
 
     public void notifyComment(User commenter, Post post) {
         if (!commenter.getId().equals(post.getUser().getId())) {
             save(commenter, post.getUser(), NotificationType.POST_COMMENTED, post.getId(),
-                 commenter.getUsername() + " commented on your post");
+                    commenter.getUsername() + " commented on your post");
         }
     }
 
     public void notifyShare(User sharer, Post post) {
         if (!sharer.getId().equals(post.getUser().getId())) {
             save(sharer, post.getUser(), NotificationType.POST_SHARED, post.getId(),
-                 sharer.getUsername() + " shared your post");
+                    sharer.getUsername() + " shared your post");
         }
     }
 
@@ -68,6 +68,12 @@ public class NotificationService {
 
     public long getUnreadCount(User user) {
         return notificationRepository.countByRecipientAndReadFalse(user);
+    }
+
+
+    @Transactional
+    public void deleteNotification(Long notificationId){notificationRepository.deleteById(notificationId);
+
     }
 
     @Transactional
@@ -92,6 +98,7 @@ public class NotificationService {
                 .build();
         notificationRepository.save(notification);
         logger.debug("Notification created: {} -> {}: {}", sender.getUsername(),
-                     recipient.getUsername(), type);
+                recipient.getUsername(), type);
     }
 }
+

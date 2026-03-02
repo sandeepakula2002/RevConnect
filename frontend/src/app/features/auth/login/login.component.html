@@ -2,56 +2,110 @@
   <div class="card shadow-sm" style="width: 420px;">
     <div class="card-body p-5">
 
-      <!-- Logo -->
       <div class="text-center mb-4">
         <h2 class="fw-bold text-primary">RevConnect</h2>
         <p class="text-muted">Sign in to your account</p>
       </div>
 
-      <!-- Error Alert -->
-      <div class="alert alert-danger" *ngIf="error">
+      <!-- LOGIN ERROR -->
+      <div class="alert alert-danger" *ngIf="error && !showForgotPassword">
         <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
       </div>
 
-      <!-- Login Form -->
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <!-- ================= LOGIN FORM ================= -->
+      <div *ngIf="!showForgotPassword">
 
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Username or Email</label>
-          <input
-            type="text"
-            class="form-control"
-            [class.is-invalid]="f['usernameOrEmail'].invalid && f['usernameOrEmail'].touched"
-            formControlName="usernameOrEmail"
-            placeholder="Enter username or email"
-          />
-          <div class="invalid-feedback">Username or email is required</div>
-        </div>
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
-        <div class="mb-4">
-          <label class="form-label fw-semibold">Password</label>
-          <input
-            type="password"
-            class="form-control"
-            [class.is-invalid]="f['password'].invalid && f['password'].touched"
-            formControlName="password"
-            placeholder="Enter password"
-          />
-          <div class="invalid-feedback">
-            Password must be at least 8 characters
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Username or Email</label>
+            <input type="text"
+                   class="form-control"
+                   [class.is-invalid]="f['usernameOrEmail'].invalid && f['usernameOrEmail'].touched"
+                   formControlName="usernameOrEmail"
+                   placeholder="Enter username or email"/>
           </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Password</label>
+            <input type="password"
+                   class="form-control"
+                   [class.is-invalid]="f['password'].invalid && f['password'].touched"
+                   formControlName="password"
+                   placeholder="Enter password"/>
+          </div>
+
+          <!-- Forgot Password Link -->
+          <div class="text-end mb-3">
+            <a style="cursor:pointer"
+               class="text-primary"
+               (click)="openForgotPassword()">
+              Forgot Password?
+            </a>
+          </div>
+
+          <button type="submit"
+                  class="btn btn-primary w-100 py-2"
+                  [disabled]="loginForm.invalid || loading">
+
+            <span *ngIf="loading"
+                  class="spinner-border spinner-border-sm me-2"></span>
+
+            {{ loading ? 'Signing in...' : 'Sign In' }}
+          </button>
+
+        </form>
+
+      </div>
+
+      <!-- ================= FORGOT PASSWORD ================= -->
+
+      <div *ngIf="showForgotPassword" class="mt-4">
+
+        <hr>
+
+        <h5 class="text-center mb-3">Reset Password</h5>
+
+        <div class="alert alert-success" *ngIf="forgotMessage">
+          {{forgotMessage}}
         </div>
 
-        <button
-          type="submit"
-          class="btn btn-primary w-100 py-2"
-          [disabled]="loginForm.invalid || loading"
-        >
-          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
-          {{ loading ? 'Signing in...' : 'Sign In' }}
-        </button>
+        <div class="alert alert-danger" *ngIf="forgotError">
+          {{forgotError}}
+        </div>
 
-      </form>
+        <form [formGroup]="forgotForm" (ngSubmit)="resetPassword()">
+
+          <input class="form-control mb-3"
+                 placeholder="Registered Email"
+                 formControlName="email">
+
+          <input type="password"
+                 class="form-control mb-3"
+                 placeholder="New Password"
+                 formControlName="password">
+
+          <button type="submit"
+                  class="btn btn-outline-primary w-100"
+                  [disabled]="forgotLoading">
+
+            <span *ngIf="forgotLoading"
+                  class="spinner-border spinner-border-sm me-2"></span>
+
+            Reset Password
+          </button>
+
+        </form>
+
+        <div class="text-center mt-2">
+          <!-- ✅ FIXED -->
+          <a style="cursor:pointer"
+             (click)="backToLogin()">
+            Back to Login
+          </a>
+        </div>
+
+      </div>
 
       <hr class="my-4">
 
