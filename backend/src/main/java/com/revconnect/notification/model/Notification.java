@@ -1,5 +1,6 @@
 package com.revconnect.notification.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.revconnect.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,19 +20,20 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)   // CHANGED: LAZY → EAGER
     @JoinColumn(name = "recipient_id", nullable = false)
+    @JsonIgnoreProperties({"password", "notifications", "posts", "connections", "hibernateLazyInitializer"})
     private User recipient;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)   // CHANGED: LAZY → EAGER
     @JoinColumn(name = "sender_id", nullable = false)
+    @JsonIgnoreProperties({"password", "notifications", "posts", "connections", "hibernateLazyInitializer"})
     private User sender;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private NotificationType type;
 
-    // Reference ID (post ID, comment ID, connection ID, etc.)
     private Long referenceId;
 
     @Column(length = 500)
