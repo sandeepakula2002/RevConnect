@@ -3,6 +3,7 @@ package com.revconnect.network.service;
 import com.revconnect.common.exception.BadRequestException;
 import com.revconnect.common.exception.ResourceNotFoundException;
 import com.revconnect.common.exception.UnauthorizedException;
+import com.revconnect.network.dto.ConnectionResponse;
 import com.revconnect.network.model.Connection;
 import com.revconnect.network.model.ConnectionStatus;
 import com.revconnect.network.model.Follow;
@@ -13,154 +14,243 @@ import com.revconnect.user.dto.UserDtos;
 import com.revconnect.user.model.User;
 import com.revconnect.user.repository.UserRepository;
 import com.revconnect.user.service.UserService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class NetworkService {
 
-    private static final Logger logger = LogManager.getLogger(NetworkService.class);
+    @Autowired
+    private ConnectionRepository connectionRepository;
 
-    @Autowired private ConnectionRepository connectionRepository;
-    @Autowired private FollowRepository followRepository;
-    @Autowired private UserService userService;
-    @Autowired private UserRepository userRepository;
-    @Autowired private NotificationService notificationService;
+    @Autowired
+    private FollowRepository followRepository;
 
-    // ─── Connections ─────────────────────────────────────────────────
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
+
+    // ─────────────────────────────
+    // Send Connection Request
+    // ─────────────────────────────
 
     @Transactional
-    public Connection sendConnectionRequest(Long targetUserId, String currentUsername) {
-        User currentUser = userService.getUserByUsername(currentUsername);
+    public ConnectionResponse sendConnectionRequest(Long targetUserId, String username) {
+
+        User currentUser = userService.getUserByUsername(username);
         User targetUser = userService.getUserById(targetUserId);
 
         if (currentUser.getId().equals(targetUserId)) {
             throw new BadRequestException("You cannot connect with yourself");
         }
 
-        connectionRepository.findConnectionBetween(currentUser.getId(), targetUserId)
-                .ifPresent(c -> { throw new BadRequestException("Connection already exists or is pending"); });
+        connectionRepository
+                .findConnectionBetween(currentUser.getId(), targetUserId)
+                .ifPresent(c -> {
+                    throw new BadRequestException("Connection already exists or pending");
+                });
 
         Connection connection = Connection.builder()
                 .requester(currentUser)
                 .addressee(targetUser)
+                .status(ConnectionStatus.PENDING)
                 .build();
+
         connection = connectionRepository.save(connection);
+
         notificationService.notifyConnectionRequest(currentUser, targetUser);
-        logger.info("Connection request: {} -> {}", currentUsername, targetUser.getUsername());
-        return connection;
+
+        return ConnectionResponse.from(connection);
     }
 
+
+    // ─────────────────────────────
+    // Accept / Reject Request
+    // ─────────────────────────────
+
     @Transactional
-    public Connection respondToRequest(Long connectionId, boolean accept, String currentUsername) {
+    public ConnectionResponse respondToRequest(Long connectionId, boolean accept, String username) {
+
         Connection connection = connectionRepository.findById(connectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Connection request not found"));
 
-        if (!connection.getAddressee().getUsername().equals(currentUsername)) {
+        if (!connection.getAddressee().getUsername().equals(username)) {
             throw new UnauthorizedException("You can only respond to your own requests");
         }
 
-        connection.setStatus(accept ? ConnectionStatus.ACCEPTED : ConnectionStatus.REJECTED);
+        connection.setStatus(
+                accept ? ConnectionStatus.ACCEPTED : ConnectionStatus.REJECTED
+        );
+
         connection = connectionRepository.save(connection);
 
-        if (accept) {
-            notificationService.notifyConnectionAccepted(
-                    connection.getAddressee(), connection.getRequester());
-        }
-        return connection;
+        return ConnectionResponse.from(connection);
     }
 
+
+    // ─────────────────────────────
+    // Remove Connection
+    // ─────────────────────────────
+
     @Transactional
-    public void removeConnection(Long targetUserId, String currentUsername) {
-        User currentUser = userService.getUserByUsername(currentUsername);
+    public void removeConnection(Long targetUserId, String username) {
+
+        User currentUser = userService.getUserByUsername(username);
+
         Connection connection = connectionRepository
                 .findConnectionBetween(currentUser.getId(), targetUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Connection not found"));
+
         connectionRepository.delete(connection);
     }
 
-    public List<Connection> getConnections(String username) {
+
+    // ─────────────────────────────
+    // Get Accepted Connections
+    // ─────────────────────────────
+
+    @Transactional(readOnly = true)
+    public List<ConnectionResponse> getConnections(String username) {
+
         User user = userService.getUserByUsername(username);
-        return connectionRepository.findAcceptedConnections(user.getId());
+
+        return connectionRepository.findAcceptedConnections(user.getId())
+                .stream()
+                .map(ConnectionResponse::from)
+                .collect(Collectors.toList());
     }
 
-    public List<Connection> getPendingRequests(String username) {
+
+    // ─────────────────────────────
+    // Get Pending Requests (Received)
+    // ─────────────────────────────
+
+    @Transactional(readOnly = true)
+    public List<ConnectionResponse> getPendingRequests(String username) {
+
         User user = userService.getUserByUsername(username);
-        return connectionRepository.findByAddresseeAndStatus(user, ConnectionStatus.PENDING);
+
+        return connectionRepository
+                .findReceivedRequests(user, ConnectionStatus.PENDING)
+                .stream()
+                .map(ConnectionResponse::from)
+                .collect(Collectors.toList());
     }
 
-    public List<Connection> getSentRequests(String username) {
+
+    // ─────────────────────────────
+    // Get Sent Requests
+    // ─────────────────────────────
+
+    @Transactional(readOnly = true)
+    public List<ConnectionResponse> getSentRequests(String username) {
+
         User user = userService.getUserByUsername(username);
-        return connectionRepository.findByRequesterAndStatus(user, ConnectionStatus.PENDING);
+
+        return connectionRepository
+                .findSentRequests(user, ConnectionStatus.PENDING)
+                .stream()
+                .map(ConnectionResponse::from)
+                .collect(Collectors.toList());
     }
 
-    // ─── Suggestions ─────────────────────────────────────────────────
 
-    public List<UserDtos.UserResponse> getSuggestedConnections(String currentUsername, int limit) {
-        User currentUser = userService.getUserByUsername(currentUsername);
+    // ─────────────────────────────
+    // Suggested Connections
+    // ─────────────────────────────
 
-        List<Long> connectedIds = connectionRepository.findConnectedUserIds(currentUser.getId());
+    @Transactional(readOnly = true)
+    public List<UserDtos.UserResponse> getSuggestedConnections(String username, int limit) {
 
-        List<Long> pendingIds = connectionRepository
-                .findByRequesterAndStatus(currentUser, ConnectionStatus.PENDING)
-                .stream().map(c -> c.getAddressee().getId()).collect(Collectors.toList());
+        User currentUser = userService.getUserByUsername(username);
 
-        List<Long> allExcluded = new ArrayList<>();
-        allExcluded.add(currentUser.getId());
-        allExcluded.addAll(connectedIds);
-        allExcluded.addAll(pendingIds);
+        List<Long> connectedIds =
+                connectionRepository.findConnectedUserIds(currentUser.getId());
 
-        return userRepository.findAll().stream()
-                .filter(u -> !allExcluded.contains(u.getId()))
+        return userRepository.findAll()
+                .stream()
+                .filter(u -> !u.getId().equals(currentUser.getId()))
+                .filter(u -> !connectedIds.contains(u.getId()))
                 .limit(limit)
                 .map(UserDtos.UserResponse::from)
                 .collect(Collectors.toList());
     }
 
-    // ─── Follow ──────────────────────────────────────────────────────
+
+    // ─────────────────────────────
+    // Follow User
+    // ─────────────────────────────
 
     @Transactional
-    public Follow followUser(Long targetUserId, String currentUsername) {
-        User follower = userService.getUserByUsername(currentUsername);
+    public Follow followUser(Long targetUserId, String username) {
+
+        User follower = userService.getUserByUsername(username);
         User following = userService.getUserById(targetUserId);
 
-        if (follower.getId().equals(targetUserId)) {
-            throw new BadRequestException("You cannot follow yourself");
-        }
         if (followRepository.existsByFollowerAndFollowing(follower, following)) {
-            throw new BadRequestException("You are already following this user");
+            throw new BadRequestException("Already following this user");
         }
 
-        Follow follow = Follow.builder().follower(follower).following(following).build();
+        Follow follow = Follow.builder()
+                .follower(follower)
+                .following(following)
+                .build();
+
         follow = followRepository.save(follow);
+
         notificationService.notifyNewFollower(follower, following);
+
         return follow;
     }
 
+
+    // ─────────────────────────────
+    // Unfollow
+    // ─────────────────────────────
+
     @Transactional
-    public void unfollowUser(Long targetUserId, String currentUsername) {
-        User follower = userService.getUserByUsername(currentUsername);
+    public void unfollowUser(Long targetUserId, String username) {
+
+        User follower = userService.getUserByUsername(username);
         User following = userService.getUserById(targetUserId);
-        if (!followRepository.existsByFollowerAndFollowing(follower, following)) {
-            throw new BadRequestException("You are not following this user");
-        }
+
         followRepository.deleteByFollowerAndFollowing(follower, following);
     }
 
+
+    // ─────────────────────────────
+    // Followers
+    // ─────────────────────────────
+
+    @Transactional(readOnly = true)
     public List<Follow> getFollowers(Long userId) {
+
         User user = userService.getUserById(userId);
+
         return followRepository.findByFollowing(user);
     }
 
+
+    // ─────────────────────────────
+    // Following
+    // ─────────────────────────────
+
+    @Transactional(readOnly = true)
     public List<Follow> getFollowing(Long userId) {
+
         User user = userService.getUserById(userId);
+
         return followRepository.findByFollower(user);
     }
 }

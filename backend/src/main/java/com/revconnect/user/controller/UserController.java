@@ -5,10 +5,9 @@ import com.revconnect.user.dto.UserDtos;
 import com.revconnect.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -21,8 +20,13 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UserDtos.UserResponse>> getUserProfile(
             @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        UserDtos.UserResponse profile = userService.getUserProfile(id, currentUser.getUsername());
+            Principal principal) {
+
+        String username = principal.getName();
+
+        UserDtos.UserResponse profile =
+                userService.getUserProfile(id, username);
+
         return ResponseEntity.ok(ApiResponse.success(profile));
     }
 
@@ -30,26 +34,43 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserDtos.UserResponse>> updateProfile(
             @PathVariable Long id,
             @RequestBody UserDtos.ProfileUpdateRequest request,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        UserDtos.UserResponse updated = userService.updateProfile(id, request, currentUser.getUsername());
-        return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", updated));
+            Principal principal) {
+
+        String username = principal.getName();
+
+        UserDtos.UserResponse updated =
+                userService.updateProfile(id, request, username);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Profile updated successfully", updated));
     }
 
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<UserDtos.UserResponse>>> searchUsers(
             @RequestParam String q,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        List<UserDtos.UserResponse> results = userService.searchUsers(q,
-                currentUser != null ? currentUser.getUsername() : null);
+            Principal principal) {
+
+        String username =
+                principal != null ? principal.getName() : null;
+
+        List<UserDtos.UserResponse> results =
+                userService.searchUsers(q, username);
+
         return ResponseEntity.ok(ApiResponse.success(results));
     }
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserDtos.UserResponse>> getCurrentUser(
-            @AuthenticationPrincipal UserDetails currentUser) {
-        UserDtos.UserResponse user = userService.getUserProfile(
-                userService.getUserByUsername(currentUser.getUsername()).getId(),
-                currentUser.getUsername());
+            Principal principal) {
+
+        String username = principal.getName();
+
+        Long userId =
+                userService.getUserByUsername(username).getId();
+
+        UserDtos.UserResponse user =
+                userService.getUserProfile(userId, username);
+
         return ResponseEntity.ok(ApiResponse.success(user));
     }
 }

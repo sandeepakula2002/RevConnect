@@ -13,7 +13,13 @@ export class AuthGuard implements CanActivate {
     if (this.authService.isLoggedIn()) {
       return true;
     }
-    this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+    this.router.navigate(
+      ['/login'],
+      {
+        queryParams: { returnUrl: state.url },
+        replaceUrl: true
+      }
+    );
     return false;
   }
 }
@@ -24,7 +30,7 @@ export class GuestGuard implements CanActivate {
 
   canActivate(): boolean {
     if (!this.authService.isLoggedIn()) return true;
-    this.router.navigate(['/feed']);
+    this.router.navigate(['/feed'], { replaceUrl: true });
     return false;
   }
 }
@@ -35,7 +41,7 @@ export class BusinessGuard implements CanActivate {
 
   canActivate(): boolean {
     if (this.authService.isBusinessOrCreator()) return true;
-    this.router.navigate(['/feed']);
+    this.router.navigate(['/feed'], { replaceUrl: true });
     return false;
   }
 }

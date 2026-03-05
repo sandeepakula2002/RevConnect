@@ -1,69 +1,59 @@
 package com.revconnect.like;
 
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.revconnect.like.controller.LikeController;
+import com.revconnect.like.service.LikeService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Map;
 
-import com.revconnect.like.controller.LikeController;
-import com.revconnect.like.service.LikeService;
-import com.revconnect.security.JwtAuthenticationFilter;
-import com.revconnect.security.JwtTokenProvider;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.Test;
+@ExtendWith(MockitoExtension.class)
+class LikeControllerTest {
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+    private MockMvc mockMvc;
 
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+    @Mock
+    private LikeService likeService;
 
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+    @InjectMocks
+    private LikeController likeController;
 
-@WebMvcTest(LikeController.class)
-@AutoConfigureMockMvc(addFilters = false)
-@WithMockUser(username = "vasanth")
-public class LikeControllerTest {
-
-    @Autowired
-    MockMvc mockMvc;
-
-    @MockBean
-    LikeService likeService;
-
-    @MockBean
-    JwtTokenProvider jwtTokenProvider;
-
-    @MockBean
-    JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    @MockBean
-    JpaMetamodelMappingContext jpaMetamodelMappingContext;
+    @BeforeEach
+    void setup() {
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(likeController)
+                .build();
+    }
 
     @Test
     void testLikePost() throws Exception {
 
-        when(likeService.likePost(1L,"vasanth"))
-                .thenReturn(Map.of("liked",true,"likeCount",1));
+        when(likeService.likePost(1L, "demoUser"))
+                .thenReturn(Map.of("liked", true, "likeCount", 5));
 
         mockMvc.perform(post("/posts/1/like")
-                .with(user("vasanth")))
+                        .principal(() -> "demoUser"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void testUnlikePost() throws Exception {
 
-        when(likeService.unlikePost(1L,"vasanth"))
-                .thenReturn(Map.of("liked",false,"likeCount",0));
+        when(likeService.unlikePost(1L, "demoUser"))
+                .thenReturn(Map.of("liked", false, "likeCount", 4));
 
         mockMvc.perform(delete("/posts/1/like")
-                .with(user("vasanth")))
+                        .principal(() -> "demoUser"))
                 .andExpect(status().isOk());
     }
 }

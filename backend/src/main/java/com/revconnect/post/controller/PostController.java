@@ -8,10 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -24,8 +23,13 @@ public class PostController {
     @PostMapping
     public ResponseEntity<ApiResponse<PostDtos.PostResponse>> createPost(
             @Valid @RequestBody PostDtos.CreatePostRequest request,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        PostDtos.PostResponse post = postService.createPost(request, currentUser.getUsername());
+            Principal principal) {
+
+        String username = principal.getName();
+
+        PostDtos.PostResponse post =
+                postService.createPost(request, username);
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.created("Post created", post));
     }
@@ -33,25 +37,28 @@ public class PostController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PostDtos.PostResponse>> getPost(
             @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails currentUser) {
+            Principal principal) {
+
         return ResponseEntity.ok(ApiResponse.success(
-                postService.getPost(id, currentUser.getUsername())));
+                postService.getPost(id, principal.getName())));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PostDtos.PostResponse>> updatePost(
             @PathVariable Long id,
             @RequestBody PostDtos.UpdatePostRequest request,
-            @AuthenticationPrincipal UserDetails currentUser) {
+            Principal principal) {
+
         return ResponseEntity.ok(ApiResponse.success("Post updated",
-                postService.updatePost(id, request, currentUser.getUsername())));
+                postService.updatePost(id, request, principal.getName())));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deletePost(
             @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        postService.deletePost(id, currentUser.getUsername());
+            Principal principal) {
+
+        postService.deletePost(id, principal.getName());
         return ResponseEntity.ok(ApiResponse.success("Post deleted", null));
     }
 
@@ -60,16 +67,18 @@ public class PostController {
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal UserDetails currentUser) {
+            Principal principal) {
+
         return ResponseEntity.ok(ApiResponse.success(
-                postService.getUserPosts(userId, page, size, currentUser.getUsername())));
+                postService.getUserPosts(userId, page, size, principal.getName())));
     }
 
     @GetMapping("/trending")
     public ResponseEntity<ApiResponse<List<PostDtos.PostResponse>>> getTrending(
-            @AuthenticationPrincipal UserDetails currentUser) {
+            Principal principal) {
+
         return ResponseEntity.ok(ApiResponse.success(
-                postService.getTrendingPosts(currentUser.getUsername())));
+                postService.getTrendingPosts(principal.getName())));
     }
 
     @GetMapping("/search")
@@ -77,16 +86,18 @@ public class PostController {
             @RequestParam String hashtag,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal UserDetails currentUser) {
+            Principal principal) {
+
         return ResponseEntity.ok(ApiResponse.success(
-                postService.searchByHashtag(hashtag, page, size, currentUser.getUsername())));
+                postService.searchByHashtag(hashtag, page, size, principal.getName())));
     }
 
     @GetMapping("/{id}/analytics")
     public ResponseEntity<ApiResponse<PostDtos.PostAnalyticsResponse>> getAnalytics(
             @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails currentUser) {
+            Principal principal) {
+
         return ResponseEntity.ok(ApiResponse.success(
-                postService.getPostAnalytics(id, currentUser.getUsername())));
+                postService.getPostAnalytics(id, principal.getName())));
     }
 }

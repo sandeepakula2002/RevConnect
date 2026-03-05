@@ -1,64 +1,71 @@
 package com.revconnect.feed;
 
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.List;
-
 import com.revconnect.feed.controller.FeedController;
 import com.revconnect.feed.service.FeedService;
 import com.revconnect.post.dto.PostDtos;
-import com.revconnect.security.JwtAuthenticationFilter;
-import com.revconnect.security.JwtTokenProvider;
-
+import com.revconnect.post.model.Post;
+import com.revconnect.user.model.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.security.test.context.support.WithMockUser;
-
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@WebMvcTest(FeedController.class)
-@AutoConfigureMockMvc(addFilters = false)
-@WithMockUser(username = "vasanth")
-public class FeedControllerTest {
+import java.util.List;
 
-    @Autowired
-    MockMvc mockMvc;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-    @MockBean
-    FeedService feedService;
+@ExtendWith(MockitoExtension.class)
+class FeedControllerTest {
 
-    @MockBean
-    JwtTokenProvider jwtTokenProvider;
+    private MockMvc mockMvc;
 
-    @MockBean
-    JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Mock
+    private FeedService feedService;
 
-    @MockBean
-    JpaMetamodelMappingContext jpaMetamodelMappingContext;
+    @InjectMocks
+    private FeedController feedController;
+
+    @BeforeEach
+    void setup() {
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(feedController)
+                .setMessageConverters(new MappingJackson2HttpMessageConverter())
+                .build();
+    }
 
     @Test
     void testGetFeed() throws Exception {
 
-        Page<PostDtos.PostResponse> page =
-                new PageImpl<>(List.of());
+        // 🔥 Create valid user inside Post
+        User author = new User();
+        author.setId(2L);
+        author.setUsername("author");
 
-        when(feedService.getFeed("vasanth",0,10))
+        Post post = new Post();
+        post.setId(10L);
+        post.setUser(author);
+        post.setContent("Hello");
+
+        Page<PostDtos.PostResponse> page =
+                new PageImpl<>(new java.util.ArrayList<>());
+
+        when(feedService.getFeed(anyString(), anyInt(), anyInt()))
                 .thenReturn(page);
 
         mockMvc.perform(get("/feed")
-                .with(user("vasanth")))
+                        .param("page","0")
+                        .param("size","10")
+                        .principal(() -> "demoUser"))
                 .andExpect(status().isOk());
     }
 }

@@ -1,72 +1,101 @@
 package com.revconnect.comment;
 
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.revconnect.comment.controller.CommentController;
 import com.revconnect.comment.model.Comment;
 import com.revconnect.comment.service.CommentService;
-import com.revconnect.security.JwtAuthenticationFilter;
-import com.revconnect.security.JwtTokenProvider;
-
+import com.revconnect.user.model.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@WebMvcTest(CommentController.class)
-@AutoConfigureMockMvc(addFilters = false)
-@WithMockUser(username = "vasanth")
-public class CommentControllerTest {
+import java.util.List;
+import java.util.Map;
 
-    @Autowired
-    MockMvc mockMvc;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-    @MockBean
-    CommentService commentService;
+@ExtendWith(MockitoExtension.class)
+class CommentControllerTest {
 
-    @MockBean
-    JwtTokenProvider jwtTokenProvider;
+    private MockMvc mockMvc;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
-    @MockBean
-    JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Mock
+    private CommentService commentService;
 
-    @MockBean
-    JpaMetamodelMappingContext jpaMetamodelMappingContext;
+    @InjectMocks
+    private CommentController commentController;
 
-    @Autowired
-    ObjectMapper objectMapper;
+    @BeforeEach
+    void setup() {
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(commentController)
+                .setMessageConverters(new MappingJackson2HttpMessageConverter())
+                .build();
+    }
 
     @Test
     void testAddComment() throws Exception {
 
-        Map<String,String> body = new HashMap<>();
-        body.put("content","Nice post");
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("demoUser");
 
         Comment comment = new Comment();
         comment.setId(1L);
-        comment.setContent("Nice post");
+        comment.setContent("Nice");
+        comment.setUser(user); // 🔥 IMPORTANT
 
-        when(commentService.addComment(1L,"Nice post","vasanth"))
+        when(commentService.addComment(anyLong(), anyString(), anyString()))
                 .thenReturn(comment);
 
         mockMvc.perform(post("/posts/1/comments")
-                .with(user("vasanth"))
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(body)))
+                        .principal(() -> "demoUser")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(
+                                Map.of("content","Nice"))))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    void testGetComments() throws Exception {
+
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("demoUser");
+
+        Comment comment = new Comment();
+        comment.setId(1L);
+        comment.setContent("Nice");
+        comment.setUser(user);
+
+        when(commentService.getComments(anyLong(), anyInt(), anyInt()))
+                .thenReturn(new PageImpl<>(new java.util.ArrayList<>()));
+
+        mockMvc.perform(get("/posts/1/comments")
+                        .param("page","0")
+                        .param("size","10"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testDeleteComment() throws Exception {
+
+        doNothing().when(commentService)
+                .deleteComment(anyLong(), anyString());
+
+        mockMvc.perform(delete("/comments/1")
+                        .principal(() -> "demoUser"))
+                .andExpect(status().isOk());
     }
 }

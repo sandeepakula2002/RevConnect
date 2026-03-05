@@ -1,64 +1,96 @@
 package com.revconnect.user;
 
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.revconnect.security.JwtAuthenticationFilter;
-import com.revconnect.security.JwtTokenProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.revconnect.user.controller.UserController;
 import com.revconnect.user.dto.UserDtos;
 import com.revconnect.user.service.UserService;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
-import org.springframework.security.test.context.support.WithMockUser;
-
-
-
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@WebMvcTest(UserController.class)
-@AutoConfigureMockMvc(addFilters = false)
-@WithMockUser(username = "vasanth")
-public class UserControllerTest {
+import java.util.List;
 
-    @Autowired
-    MockMvc mockMvc;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-    @MockBean
-    UserService userService;
+@ExtendWith(MockitoExtension.class)
+class UserControllerTest {
 
-    @MockBean
-    JwtTokenProvider jwtTokenProvider;
+    private MockMvc mockMvc;
 
-    @MockBean
-    JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @MockBean
-    JpaMetamodelMappingContext jpaMetamodelMappingContext;
+    @Mock
+    private UserService userService;
+
+    @InjectMocks
+    private UserController userController;
+
+    @BeforeEach
+    void setup() {
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(userController)
+                .build();
+    }
 
     @Test
     void testGetUserProfile() throws Exception {
 
-        UserDtos.UserResponse response =
-                UserDtos.UserResponse.builder()
-                .username("vasanth")
-                .build();
-
-        when(userService.getUserProfile(1L,"vasanth"))
-                .thenReturn(response);
+        when(userService.getUserProfile(1L, "demoUser"))
+                .thenReturn(UserDtos.UserResponse.builder().id(1L).build());
 
         mockMvc.perform(get("/users/1")
-                .with(user("vasanth")))
+                        .principal(() -> "demoUser"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testUpdateProfile() throws Exception {
+
+        when(userService.updateProfile(eq(1L), any(), eq("demoUser")))
+                .thenReturn(UserDtos.UserResponse.builder().id(1L).build());
+
+        UserDtos.ProfileUpdateRequest request =
+                new UserDtos.ProfileUpdateRequest();
+
+        mockMvc.perform(put("/users/1")
+                        .principal(() -> "demoUser")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testSearchUsers() throws Exception {
+
+        when(userService.searchUsers(eq("john"), any()))
+                .thenReturn(List.of());
+
+        mockMvc.perform(get("/users/search")
+                        .param("q", "john")
+                        .principal(() -> "demoUser"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testGetCurrentUser() throws Exception {
+
+        when(userService.getUserByUsername("demoUser"))
+                .thenReturn(com.revconnect.user.model.User.builder()
+                        .id(1L).username("demoUser").build());
+
+        when(userService.getUserProfile(1L, "demoUser"))
+                .thenReturn(UserDtos.UserResponse.builder().id(1L).build());
+
+        mockMvc.perform(get("/users/me")
+                        .principal(() -> "demoUser"))
                 .andExpect(status().isOk());
     }
 }

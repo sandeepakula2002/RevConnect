@@ -1,11 +1,11 @@
 import { Component, OnInit, HostListener } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 
 import { PostService } from '../../core/services/post.service';
 import { UserService } from '../../core/services/user.service';
 import { AuthService } from '../../core/services/auth.service';
-import { Post, PageResponse, ApiResponse } from '../../shared/models/models';
+
+import { Post, ApiResponse, PageResponse, User, Comment } from '../../shared/models/models';
 
 @Component({
   selector: 'app-feed-page',
@@ -13,86 +13,94 @@ import { Post, PageResponse, ApiResponse } from '../../shared/models/models';
 })
 export class FeedPageComponent implements OnInit {
 
-  posts: (Post & {
-    showComments?: boolean;
-    newComment?: string;
-    comments?: any[];
-  })[] = [];
+  posts: any[] = [];
 
-  loading = true;
-  loadingMore = false;
   page = 0;
   lastPage = false;
+  loading = true;
+  loadingMore = false;
 
-  currentUserId: number | null = null;
+  currentUserId = 0;
 
   newPostContent = '';
   newPostHashtags = '';
   creatingPost = false;
 
+  users: User[] = [];
   private searchSubject = new Subject<string>();
-  users: any[] = [];
 
   constructor(
     private postService: PostService,
     private userService: UserService,
-    private authService: AuthService,
-    private route: ActivatedRoute
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
 
-    this.currentUserId = this.authService.getCurrentUserId();
+    this.currentUserId = this.authService.getCurrentUserId() ?? 0;
 
     this.loadFeed();
+    this.setupSearch();
 
-    // 🔥 Open post from notification
-    this.route.params.subscribe(params => {
+  }
 
-      const postId = params['id'];
+  // ================= SEARCH =================
 
-      if (postId) {
+  setupSearch(): void {
 
-        this.postService.getPost(postId).subscribe(res => {
-
-          const post = {
-            ...res.data,
-            showComments: true,
-            newComment: '',
-            comments: []
-          };
-
-          if (!this.posts.find(p => p.id === post.id)) {
-            this.posts.unshift(post);
-          }
-
-          setTimeout(() => {
-            const element = document.getElementById('post-' + postId);
-            element?.scrollIntoView({ behavior: 'smooth' });
-          }, 500);
-        });
-      }
-    });
-
-    // 🔎 Smart search
     this.searchSubject.pipe(
       debounceTime(400),
       distinctUntilChanged(),
-      switchMap(query => this.userService.searchUsers(query))
+      switchMap(q => this.userService.searchUsers(q))
     ).subscribe(res => {
-      this.users = res.data;
+      this.users = res.data ?? [];
     });
+
   }
 
-  // ================= INFINITE SCROLL =================
-  @HostListener('window:scroll', [])
+  onSearchInput(value: string): void {
+
+    if (!value.trim()) {
+      this.users = [];
+      return;
+    }
+
+    this.searchSubject.next(value);
+
+  }
+
+  // ================= FEED =================
+
+  loadFeed(): void {
+
+    this.loading = true;
+
+    this.postService.getUserPosts(this.currentUserId, 0, 10)
+      .subscribe((res: ApiResponse<PageResponse<Post>>) => {
+
+        this.posts = res.data.content.map(p => ({
+          ...p,
+          comments: [],
+          showComments: false,
+          newComment: ''
+        }));
+
+        this.lastPage = res.data.last;
+        this.loading = false;
+
+      });
+
+  }
+
+  @HostListener('window:scroll')
   onScroll(): void {
 
     if (this.loadingMore || this.lastPage) return;
 
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 300) {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
       this.loadMore();
     }
+
   }
 
   loadMore(): void {
@@ -100,49 +108,27 @@ export class FeedPageComponent implements OnInit {
     this.loadingMore = true;
     this.page++;
 
-    this.postService.getUserPosts(this.currentUserId!, this.page, 10)
-      .subscribe({
-        next: (res: ApiResponse<PageResponse<Post>>) => {
+    this.postService.getUserPosts(this.currentUserId, this.page, 10)
+      .subscribe((res: ApiResponse<PageResponse<Post>>) => {
 
-          const newPosts = res.data.content.map(post => ({
-            ...post,
-            showComments: false,
-            newComment: '',
-            comments: []
-          }));
+        const newPosts = res.data.content.map(p => ({
+          ...p,
+          comments: [],
+          showComments: false,
+          newComment: ''
+        }));
 
-          this.posts = [...this.posts, ...newPosts];
-          this.lastPage = res.data.last;
-          this.loadingMore = false;
-        },
-        error: () => this.loadingMore = false
+        this.posts = [...this.posts, ...newPosts];
+
+        this.lastPage = res.data.last;
+        this.loadingMore = false;
+
       });
+
   }
 
-  loadFeed(): void {
+  // ================= POST =================
 
-    this.loading = true;
-    this.page = 0;
-
-    this.postService.getUserPosts(this.currentUserId!, 0, 10)
-      .subscribe({
-        next: (res) => {
-
-          this.posts = res.data.content.map(post => ({
-            ...post,
-            showComments: false,
-            newComment: '',
-            comments: []
-          }));
-
-          this.lastPage = res.data.last;
-          this.loading = false;
-        },
-        error: () => this.loading = false
-      });
-  }
-
-  // ================= CREATE POST =================
   createPost(): void {
 
     if (!this.newPostContent.trim()) return;
@@ -152,25 +138,25 @@ export class FeedPageComponent implements OnInit {
     this.postService.createPost({
       content: this.newPostContent,
       hashtags: this.newPostHashtags
-    }).subscribe({
-      next: (res) => {
+    }).subscribe(res => {
 
-        this.posts.unshift({
-          ...res.data,
-          showComments: false,
-          newComment: '',
-          comments: []
-        });
+      this.posts.unshift({
+        ...res.data,
+        comments: [],
+        showComments: false,
+        newComment: ''
+      });
 
-        this.newPostContent = '';
-        this.newPostHashtags = '';
-        this.creatingPost = false;
-      },
-      error: () => this.creatingPost = false
+      this.newPostContent = '';
+      this.newPostHashtags = '';
+      this.creatingPost = false;
+
     });
+
   }
 
   // ================= LIKE =================
+
   toggleLike(post: any): void {
 
     if (post.likedByCurrentUser) {
@@ -186,43 +172,137 @@ export class FeedPageComponent implements OnInit {
         post.likedByCurrentUser = true;
         post.likeCount++;
       });
+
     }
+
   }
 
   // ================= COMMENTS =================
-  loadComments(post: any): void {
 
-    this.postService.getComments(post.id, 0)
-      .subscribe(res => {
-        post.comments = res.data.content;
-      });
+  toggleComments(post: any): void {
+
+    post.showComments = !post.showComments;
+
+    if (post.showComments) {
+      this.loadComments(post);
+    }
+
   }
+
+ loadComments(post: any): void {
+
+   this.postService.getComments(post.id, 0)
+     .subscribe(res => {
+
+       const comments = res.data?.content ?? [];
+
+       comments.forEach((c: any) => {
+         c.replies = c.replies ?? [];
+         c.replyText = '';
+       });
+
+       // newest comment first
+       post.comments = comments.reverse();
+
+     });
+
+ }
 
   addComment(post: any): void {
 
     if (!post.newComment?.trim()) return;
 
     this.postService.addComment(post.id, post.newComment)
-      .subscribe(() => {
+      .subscribe(res => {
 
-        post.comments.push({
-          user: { username: 'You' },
-          content: post.newComment
-        });
-
-        post.commentCount++;
+       post.comments.unshift(res.data);
         post.newComment = '';
+
       });
+
   }
 
-  // ================= SEARCH =================
-  onSearchInput(value: string): void {
+  // ================= COMMENT LIKE =================
 
-    if (!value.trim()) {
-      this.users = [];
-      return;
+  likeComment(comment: any): void {
+
+    if (comment.likedByCurrentUser) {
+
+      comment.likedByCurrentUser = false;
+      comment.likeCount--;
+
+    } else {
+
+      comment.likedByCurrentUser = true;
+      comment.likeCount++;
+
     }
 
-    this.searchSubject.next(value);
+    this.postService.likeComment(comment.id).subscribe();
+
   }
+
+  // ================= DELETE COMMENT =================
+
+  deleteComment(comment: any, post: any): void {
+
+    this.postService.deleteComment(comment.id)
+      .subscribe(() => {
+
+        post.comments = post.comments.filter(
+          (c: any) => c.id !== comment.id
+        );
+
+      });
+
+  }
+
+  // ================= REPLY =================
+
+  reply(post: any, parent: any): void {
+
+    const content = parent.replyText;
+
+    if (!content?.trim()) return;
+
+    this.postService.replyToComment(post.id, parent.id, content)
+      .subscribe(res => {
+
+        if (!parent.replies) {
+          parent.replies = [];
+        }
+
+        parent.replies.push(res.data);
+        parent.replyText = '';
+
+      });
+
+  }
+
+  // ================= FOLLOW =================
+
+  follow(user: User): void {
+
+    console.log("Follow user", user.username);
+
+  }
+
+  // ================= HASHTAG =================
+
+  formatContent(text: string): string[] {
+
+    if (!text) return [];
+
+    return text.split(' ');
+
+  }
+
+  searchHashtag(tag: string): void {
+
+    const clean = tag.replace('#', '');
+
+    this.onSearchInput(clean);
+
+  }
+
 }

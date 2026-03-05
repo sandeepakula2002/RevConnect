@@ -99,11 +99,24 @@ export interface CreatePostRequest {
 // ─── Comment Models ──────────────────────────────────────────────────────
 
 export interface Comment {
+
   id: number;
-  post: { id: number };
-  user: User;
   content: string;
+
+  username: string;
+  userId: number;
+
+  postId: number;
+
+  likeCount: number;
+  likedByCurrentUser: boolean;
+
+  parentId?: number;
+
+  replies?: Comment[];
+
   createdAt: string;
+
 }
 
 // ─── Notification Models ─────────────────────────────────────────────────
@@ -127,11 +140,24 @@ export interface Notification {
 export type ConnectionStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
 
 export interface Connection {
+
   id: number;
-  requester: User;
-  addressee: User;
-  status: ConnectionStatus;
-  createdAt: string;
+
+  requesterId: number;
+  requesterUsername: string;
+  requesterFullName: string;
+
+  addresseeId: number;
+  addresseeUsername: string;
+  addresseeFullName: string;
+
+  status: string;
+}
+
+export interface User {
+  id: number;
+  username: string;
+  fullName?: string;
 }
 
 // ─── API Response Wrapper ────────────────────────────────────────────────

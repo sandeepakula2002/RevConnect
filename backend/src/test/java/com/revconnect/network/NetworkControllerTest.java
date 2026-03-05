@@ -1,59 +1,48 @@
 package com.revconnect.network;
 
+import com.revconnect.network.controller.NetworkController;
+import com.revconnect.network.service.NetworkService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.util.List;
+
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.revconnect.network.controller.NetworkController;
-import com.revconnect.network.model.Connection;
-import com.revconnect.network.service.NetworkService;
-import com.revconnect.security.JwtAuthenticationFilter;
-import com.revconnect.security.JwtTokenProvider;
+@ExtendWith(MockitoExtension.class)
+class NetworkControllerTest {
 
-import org.junit.jupiter.api.Test;
+    private MockMvc mockMvc;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+    @Mock
+    private NetworkService networkService;
 
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+    @InjectMocks
+    private NetworkController networkController;
 
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
-
-@WebMvcTest(NetworkController.class)
-@AutoConfigureMockMvc(addFilters = false)
-@WithMockUser(username = "vasanth")
-public class NetworkControllerTest {
-
-    @Autowired
-    MockMvc mockMvc;
-
-    @MockBean
-    NetworkService networkService;
-
-    @MockBean
-    JwtTokenProvider jwtTokenProvider;
-
-    @MockBean
-    JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    @MockBean
-    JpaMetamodelMappingContext jpaMetamodelMappingContext;
+    @BeforeEach
+    void setup() {
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(networkController)
+                .build();
+    }
 
     @Test
-    void testSendConnectionRequest() throws Exception {
+    void testGetConnections() throws Exception {
 
-        Connection connection =
-                Connection.builder().build();
+        when(networkService.getConnections("testuser"))
+                .thenReturn(List.of());
 
-        when(networkService.sendConnectionRequest(2L,"vasanth"))
-                .thenReturn(connection);
-
-        mockMvc.perform(post("/network/connect/2")
-                .with(user("vasanth")))
+        mockMvc.perform(get("/network/connections")
+                        .principal(() -> "testuser"))
                 .andExpect(status().isOk());
     }
 }

@@ -1,16 +1,15 @@
 package com.revconnect.network.controller;
 
 import com.revconnect.common.dto.ApiResponse;
-import com.revconnect.network.model.Connection;
+import com.revconnect.network.dto.ConnectionResponse;
 import com.revconnect.network.model.Follow;
 import com.revconnect.network.service.NetworkService;
 import com.revconnect.user.dto.UserDtos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -20,97 +19,139 @@ public class NetworkController {
     @Autowired
     private NetworkService networkService;
 
-    // ─── Connections ─────────────────────────────────────────────────
-
+    // Send connection request
     @PostMapping("/connect/{userId}")
-    public ResponseEntity<ApiResponse<Connection>> sendRequest(
+    public ResponseEntity<ApiResponse<ConnectionResponse>> sendRequest(
             @PathVariable Long userId,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        Connection c = networkService.sendConnectionRequest(userId, currentUser.getUsername());
-        return ResponseEntity.ok(ApiResponse.success("Connection request sent", c));
+            Principal principal) {
+
+        ConnectionResponse response =
+                networkService.sendConnectionRequest(userId, principal.getName());
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Connection request sent", response));
     }
 
+    // Accept request
     @PutMapping("/connections/{connectionId}/accept")
-    public ResponseEntity<ApiResponse<Connection>> acceptRequest(
+    public ResponseEntity<ApiResponse<ConnectionResponse>> acceptRequest(
             @PathVariable Long connectionId,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        Connection c = networkService.respondToRequest(connectionId, true, currentUser.getUsername());
-        return ResponseEntity.ok(ApiResponse.success("Connection accepted", c));
+            Principal principal) {
+
+        ConnectionResponse response =
+                networkService.respondToRequest(connectionId, true, principal.getName());
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Connection accepted", response));
     }
 
+    // Reject request
     @PutMapping("/connections/{connectionId}/reject")
-    public ResponseEntity<ApiResponse<Connection>> rejectRequest(
+    public ResponseEntity<ApiResponse<ConnectionResponse>> rejectRequest(
             @PathVariable Long connectionId,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        Connection c = networkService.respondToRequest(connectionId, false, currentUser.getUsername());
-        return ResponseEntity.ok(ApiResponse.success("Connection rejected", c));
+            Principal principal) {
+
+        ConnectionResponse response =
+                networkService.respondToRequest(connectionId, false, principal.getName());
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Connection rejected", response));
     }
 
+    // Remove connection
     @DeleteMapping("/connect/{userId}")
     public ResponseEntity<ApiResponse<Void>> removeConnection(
             @PathVariable Long userId,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        networkService.removeConnection(userId, currentUser.getUsername());
-        return ResponseEntity.ok(ApiResponse.success("Connection removed", null));
+            Principal principal) {
+
+        networkService.removeConnection(userId, principal.getName());
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Connection removed", null));
     }
 
+    // Get connections
     @GetMapping("/connections")
-    public ResponseEntity<ApiResponse<List<Connection>>> getConnections(
-            @AuthenticationPrincipal UserDetails currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(
-                networkService.getConnections(currentUser.getUsername())));
+    public ResponseEntity<ApiResponse<List<ConnectionResponse>>> getConnections(
+            Principal principal) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        networkService.getConnections(principal.getName())));
     }
 
+    // Pending requests
     @GetMapping("/requests/received")
-    public ResponseEntity<ApiResponse<List<Connection>>> getPendingRequests(
-            @AuthenticationPrincipal UserDetails currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(
-                networkService.getPendingRequests(currentUser.getUsername())));
+    public ResponseEntity<ApiResponse<List<ConnectionResponse>>> getPendingRequests(
+            Principal principal) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        networkService.getPendingRequests(principal.getName())));
     }
 
+    // Sent requests
     @GetMapping("/requests/sent")
-    public ResponseEntity<ApiResponse<List<Connection>>> getSentRequests(
-            @AuthenticationPrincipal UserDetails currentUser) {
-        return ResponseEntity.ok(ApiResponse.success(
-                networkService.getSentRequests(currentUser.getUsername())));
+    public ResponseEntity<ApiResponse<List<ConnectionResponse>>> getSentRequests(
+            Principal principal) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        networkService.getSentRequests(principal.getName())));
     }
 
-    // ─── Suggestions ─────────────────────────────────────────────────
-
+    // Suggestions
     @GetMapping("/suggestions")
     public ResponseEntity<List<UserDtos.UserResponse>> getSuggestions(
             @RequestParam(defaultValue = "10") int limit,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        List<UserDtos.UserResponse> suggestions =
-                networkService.getSuggestedConnections(currentUser.getUsername(), limit);
-        return ResponseEntity.ok(suggestions);
+            Principal principal) {
+
+        return ResponseEntity.ok(
+                networkService.getSuggestedConnections(principal.getName(), limit));
     }
 
-    // ─── Follow ──────────────────────────────────────────────────────
-
+    // Follow
     @PostMapping("/follow/{userId}")
     public ResponseEntity<ApiResponse<Follow>> followUser(
             @PathVariable Long userId,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        Follow follow = networkService.followUser(userId, currentUser.getUsername());
-        return ResponseEntity.ok(ApiResponse.success("Now following", follow));
+            Principal principal) {
+
+        Follow follow =
+                networkService.followUser(userId, principal.getName());
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Now following", follow));
     }
 
+    // Unfollow
     @DeleteMapping("/follow/{userId}")
     public ResponseEntity<ApiResponse<Void>> unfollowUser(
             @PathVariable Long userId,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        networkService.unfollowUser(userId, currentUser.getUsername());
-        return ResponseEntity.ok(ApiResponse.success("Unfollowed", null));
+            Principal principal) {
+
+        networkService.unfollowUser(userId, principal.getName());
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Unfollowed", null));
     }
 
+    // Followers
     @GetMapping("/followers/{userId}")
-    public ResponseEntity<ApiResponse<List<Follow>>> getFollowers(@PathVariable Long userId) {
-        return ResponseEntity.ok(ApiResponse.success(networkService.getFollowers(userId)));
+    public ResponseEntity<ApiResponse<List<Follow>>> getFollowers(
+            @PathVariable Long userId) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        networkService.getFollowers(userId)));
     }
 
+    // Following
     @GetMapping("/following/{userId}")
-    public ResponseEntity<ApiResponse<List<Follow>>> getFollowing(@PathVariable Long userId) {
-        return ResponseEntity.ok(ApiResponse.success(networkService.getFollowing(userId)));
+    public ResponseEntity<ApiResponse<List<Follow>>> getFollowing(
+            @PathVariable Long userId) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        networkService.getFollowing(userId)));
     }
 }

@@ -2,6 +2,7 @@
   <div class="card shadow-sm" style="width: 420px;">
     <div class="card-body p-5">
 
+      <!-- Header -->
       <div class="text-center mb-4">
         <h2 class="fw-bold text-primary">RevConnect</h2>
         <p class="text-muted">Sign in to your account</p>
@@ -13,37 +14,46 @@
       </div>
 
       <!-- ================= LOGIN FORM ================= -->
+
       <div *ngIf="!showForgotPassword">
 
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
+          <!-- Username -->
           <div class="mb-3">
             <label class="form-label fw-semibold">Username or Email</label>
             <input type="text"
                    class="form-control"
-                   [class.is-invalid]="f['usernameOrEmail'].invalid && f['usernameOrEmail'].touched"
                    formControlName="usernameOrEmail"
-                   placeholder="Enter username or email"/>
+                   [class.is-invalid]="f['usernameOrEmail'].invalid && f['usernameOrEmail'].touched"
+                   placeholder="Enter username or email">
+            <div class="invalid-feedback">
+              Username or email is required.
+            </div>
           </div>
 
-          <div class="mb-4">
+          <!-- Password -->
+          <div class="mb-3">
             <label class="form-label fw-semibold">Password</label>
             <input type="password"
                    class="form-control"
-                   [class.is-invalid]="f['password'].invalid && f['password'].touched"
                    formControlName="password"
-                   placeholder="Enter password"/>
+                   [class.is-invalid]="f['password'].invalid && f['password'].touched"
+                   placeholder="Enter password">
+            <div class="invalid-feedback">
+              Password must be at least 8 characters.
+            </div>
           </div>
 
-          <!-- Forgot Password Link -->
+          <!-- Forgot Link -->
           <div class="text-end mb-3">
-            <a style="cursor:pointer"
-               class="text-primary"
+            <a class="text-primary" style="cursor:pointer"
                (click)="openForgotPassword()">
               Forgot Password?
             </a>
           </div>
 
+          <!-- Submit -->
           <button type="submit"
                   class="btn btn-primary w-100 py-2"
                   [disabled]="loginForm.invalid || loading">
@@ -63,43 +73,72 @@
       <div *ngIf="showForgotPassword" class="mt-4">
 
         <hr>
+        <h5 class="text-center mb-4 fw-semibold">Reset Your Password</h5>
 
-        <h5 class="text-center mb-3">Reset Password</h5>
-
+        <!-- Success -->
         <div class="alert alert-success" *ngIf="forgotMessage">
-          {{forgotMessage}}
+          {{ forgotMessage }}
         </div>
 
+        <!-- Error -->
         <div class="alert alert-danger" *ngIf="forgotError">
-          {{forgotError}}
+          {{ forgotError }}
         </div>
 
         <form [formGroup]="forgotForm" (ngSubmit)="resetPassword()">
 
-          <input class="form-control mb-3"
-                 placeholder="Registered Email"
-                 formControlName="email">
+          <!-- Email -->
+          <div class="mb-3">
+            <input type="email"
+                   class="form-control"
+                   formControlName="email"
+                   placeholder="Registered Email"
+                   [class.is-invalid]="forgotForm.get('email')?.invalid && forgotForm.get('email')?.touched">
+            <div class="invalid-feedback">
+              Please enter a valid email.
+            </div>
+          </div>
 
-          <input type="password"
-                 class="form-control mb-3"
-                 placeholder="New Password"
-                 formControlName="password">
+          <!-- New Password -->
+          <div class="mb-3">
+            <input type="password"
+                   class="form-control"
+                   formControlName="password"
+                   placeholder="New Password"
+                   [class.is-invalid]="forgotForm.get('password')?.invalid && forgotForm.get('password')?.touched">
+            <div class="invalid-feedback">
+              Password must be at least 8 characters.
+            </div>
+          </div>
 
+          <!-- Confirm Password -->
+          <div class="mb-3">
+            <input type="password"
+                   class="form-control"
+                   formControlName="confirmPassword"
+                   placeholder="Confirm Password"
+                   [class.is-invalid]="forgotForm.errors?.['passwordMismatch'] && forgotForm.get('confirmPassword')?.touched">
+            <div class="invalid-feedback">
+              Passwords do not match.
+            </div>
+          </div>
+
+          <!-- Reset Button -->
           <button type="submit"
                   class="btn btn-outline-primary w-100"
-                  [disabled]="forgotLoading">
+                  [disabled]="forgotForm.invalid || forgotLoading">
 
             <span *ngIf="forgotLoading"
                   class="spinner-border spinner-border-sm me-2"></span>
 
-            Reset Password
+            {{ forgotLoading ? 'Resetting...' : 'Reset Password' }}
           </button>
 
         </form>
 
-        <div class="text-center mt-2">
-          <!-- ✅ FIXED -->
-          <a style="cursor:pointer"
+        <div class="text-center mt-3">
+          <a class="text-primary"
+             style="cursor:pointer"
              (click)="backToLogin()">
             Back to Login
           </a>
@@ -111,7 +150,9 @@
 
       <p class="text-center mb-0">
         Don't have an account?
-        <a routerLink="/register" class="text-primary fw-semibold">Create one</a>
+        <a routerLink="/register" class="text-primary fw-semibold">
+          Create one
+        </a>
       </p>
 
     </div>

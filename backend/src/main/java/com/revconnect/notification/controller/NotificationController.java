@@ -8,10 +8,10 @@ import com.revconnect.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -22,46 +22,74 @@ public class NotificationController {
     @Autowired private UserService userService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<Notification>>> getNotifications(
+    public ResponseEntity<ApiResponse<List<Notification>>> getNotifications(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        User user = userService.getUserByUsername(currentUser.getUsername());
-        return ResponseEntity.ok(ApiResponse.success(
-                notificationService.getNotifications(user, page, size)));
+            Principal principal) {
+
+        User user =
+                userService.getUserByUsername(principal.getName());
+
+        Page<Notification> notificationPage =
+                notificationService.getNotifications(user, page, size);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(notificationPage.getContent())
+        );
     }
 
     @GetMapping("/unread-count")
     public ResponseEntity<ApiResponse<Map<String, Long>>> getUnreadCount(
-            @AuthenticationPrincipal UserDetails currentUser) {
-        User user = userService.getUserByUsername(currentUser.getUsername());
-        long count = notificationService.getUnreadCount(user);
-        return ResponseEntity.ok(ApiResponse.success(Map.of("count", count)));
+            Principal principal) {
+
+        User user =
+                userService.getUserByUsername(principal.getName());
+
+        long count =
+                notificationService.getUnreadCount(user);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(Map.of("count", count))
+        );
     }
 
     @PutMapping("/{id}/read")
     public ResponseEntity<ApiResponse<Void>> markAsRead(
             @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        User user = userService.getUserByUsername(currentUser.getUsername());
+            Principal principal) {
+
+        User user =
+                userService.getUserByUsername(principal.getName());
+
         notificationService.markAsRead(id, user.getId());
-        return ResponseEntity.ok(ApiResponse.success("Marked as read", null));
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Marked as read", null)
+        );
     }
 
     @PutMapping("/read-all")
     public ResponseEntity<ApiResponse<Void>> markAllAsRead(
-            @AuthenticationPrincipal UserDetails currentUser) {
-        User user = userService.getUserByUsername(currentUser.getUsername());
+            Principal principal) {
+
+        User user =
+                userService.getUserByUsername(principal.getName());
+
         notificationService.markAllAsRead(user.getId());
-        return ResponseEntity.ok(ApiResponse.success("All notifications marked as read", null));
+
+        return ResponseEntity.ok(
+                ApiResponse.success("All notifications marked as read", null)
+        );
     }
 
-    // FIXED: was returning plain String — now consistent ResponseEntity like all other methods
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteNotification(
-            @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails currentUser) {
+            @PathVariable Long id) {
+
         notificationService.deleteNotification(id);
-        return ResponseEntity.ok(ApiResponse.success("Notification deleted", null));
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Notification deleted", null)
+        );
     }
 }

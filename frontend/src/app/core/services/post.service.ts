@@ -2,12 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+
 import {
   ApiResponse,
   PageResponse,
   Post,
   CreatePostRequest,
-  PostAnalytics
+  PostAnalytics,
+  Comment
 } from '../../shared/models/models';
 
 @Injectable({ providedIn: 'root' })
@@ -17,27 +19,24 @@ export class PostService {
 
   constructor(private http: HttpClient) {}
 
-  // ================= CREATE =================
+  // CREATE POST
   createPost(data: CreatePostRequest): Observable<ApiResponse<Post>> {
     return this.http.post<ApiResponse<Post>>(this.API, data);
   }
 
-  // ================= GET SINGLE =================
   getPost(id: number): Observable<ApiResponse<Post>> {
     return this.http.get<ApiResponse<Post>>(`${this.API}/${id}`);
   }
 
-  // ================= UPDATE =================
   updatePost(id: number, data: Partial<Post>): Observable<ApiResponse<Post>> {
     return this.http.put<ApiResponse<Post>>(`${this.API}/${id}`, data);
   }
 
-  // ================= DELETE =================
   deletePost(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.API}/${id}`);
   }
 
-  // ================= USER POSTS =================
+  // USER POSTS
   getUserPosts(
     userId: number,
     page: number = 0,
@@ -54,12 +53,12 @@ export class PostService {
     );
   }
 
-  // ================= TRENDING =================
+  // TRENDING
   getTrendingPosts(): Observable<ApiResponse<Post[]>> {
     return this.http.get<ApiResponse<Post[]>>(`${this.API}/trending`);
   }
 
-  // ================= SEARCH BY HASHTAG =================
+  // HASHTAG SEARCH
   searchByHashtag(
     hashtag: string,
     page: number = 0
@@ -75,7 +74,7 @@ export class PostService {
     );
   }
 
-  // ================= LIKE =================
+  // LIKE POST
   likePost(postId: number): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(
       `${this.API}/${postId}/like`,
@@ -83,38 +82,51 @@ export class PostService {
     );
   }
 
-  // ================= UNLIKE =================
   unlikePost(postId: number): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(
       `${this.API}/${postId}/like`
     );
   }
 
-  // ================= ANALYTICS =================
+  // ANALYTICS
   getAnalytics(postId: number): Observable<ApiResponse<PostAnalytics>> {
     return this.http.get<ApiResponse<PostAnalytics>>(
       `${this.API}/${postId}/analytics`
     );
   }
 
-  // ================= COMMENTS =================
-  addComment(postId: number, content: string): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(
+  // COMMENTS
+  addComment(postId: number, content: string): Observable<ApiResponse<Comment>> {
+    return this.http.post<ApiResponse<Comment>>(
       `${this.API}/${postId}/comments`,
       { content }
+    );
+  }
+
+  replyToComment(postId: number, parentId: number, content: string) {
+    return this.http.post<ApiResponse<Comment>>(
+      `${this.API}/${postId}/comments`,
+      { content, parentId }
     );
   }
 
   getComments(
     postId: number,
     page: number = 0
-  ): Observable<ApiResponse<PageResponse<any>>> {
+  ): Observable<ApiResponse<PageResponse<Comment>>> {
 
     const params = new HttpParams().set('page', page);
 
-    return this.http.get<ApiResponse<PageResponse<any>>>(
+    return this.http.get<ApiResponse<PageResponse<Comment>>>(
       `${this.API}/${postId}/comments`,
       { params }
+    );
+  }
+
+  likeComment(commentId: number) {
+    return this.http.post<ApiResponse<any>>(
+      `${environment.apiUrl}/comments/${commentId}/like`,
+      {}
     );
   }
 
@@ -124,7 +136,7 @@ export class PostService {
     );
   }
 
-  // ================= REPOST =================
+  // REPOST
   repost(originalPostId: number, content: string): Observable<ApiResponse<Post>> {
     return this.createPost({
       content,
@@ -132,4 +144,5 @@ export class PostService {
       type: 'REPOST'
     });
   }
+
 }

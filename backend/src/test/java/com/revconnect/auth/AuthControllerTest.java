@@ -1,62 +1,49 @@
 package com.revconnect.auth;
 
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.revconnect.auth.controller.AuthController;
 import com.revconnect.auth.dto.AuthDtos;
 import com.revconnect.auth.service.AuthService;
-import com.revconnect.security.JwtAuthenticationFilter;
-import com.revconnect.security.JwtTokenProvider;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@WebMvcTest(AuthController.class)
-@AutoConfigureMockMvc(addFilters = false)
-public class AuthControllerTest {
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-    @Autowired
-    MockMvc mockMvc;
+@ExtendWith(MockitoExtension.class)
+class AuthControllerTest {
 
-    @MockBean
-    AuthService authService;
+    private MockMvc mockMvc;
 
-    @MockBean
-    JwtTokenProvider jwtTokenProvider;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
-    @MockBean
-    JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Mock
+    private AuthService authService;
 
-    @MockBean
-    JpaMetamodelMappingContext jpaMetamodelMappingContext;
+    @InjectMocks
+    private AuthController authController;
 
-    @Autowired
-    ObjectMapper objectMapper;
+    @BeforeEach
+    void setup() {
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(authController)
+                .build();
+    }
 
     @Test
     void testRegister() throws Exception {
 
-        AuthDtos.RegisterRequest request =
-                new AuthDtos.RegisterRequest();
-
-        request.setUsername("vasanth");
-        request.setEmail("vasanth@test.com");
-        request.setPassword("12345678");
-
         AuthDtos.AuthResponse response =
                 new AuthDtos.AuthResponse(
-                        "token",
+                        "token123",
                         1L,
                         "vasanth",
                         "vasanth@test.com",
@@ -64,12 +51,20 @@ public class AuthControllerTest {
                         null
                 );
 
-        when(authService.register(request))
+        when(authService.register(any(AuthDtos.RegisterRequest.class)))
                 .thenReturn(response);
 
+        AuthDtos.RegisterRequest request =
+                new AuthDtos.RegisterRequest();
+        request.setUsername("vasanth");
+        request.setEmail("vasanth@test.com");
+        request.setPassword("12345678");
+
         mockMvc.perform(post("/auth/register")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
     }
+
+
 }

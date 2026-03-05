@@ -21,7 +21,7 @@ import { NotificationListComponent } from './features/notifications/notification
 
 const routes: Routes = [
 
-  { path: '', redirectTo: '/feed', pathMatch: 'full' },
+  { path: '', redirectTo: 'feed', pathMatch: 'full' },
 
   // Auth
   { path: 'login', component: LoginComponent, canActivate: [GuestGuard] },
