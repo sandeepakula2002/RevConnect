@@ -45,4 +45,5 @@ class NetworkControllerTest {
                         .principal(() -> "testuser"))
                 .andExpect(status().isOk());
     }
+
 }

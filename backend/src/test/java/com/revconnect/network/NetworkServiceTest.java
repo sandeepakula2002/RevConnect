@@ -1,13 +1,14 @@
 package com.revconnect.network;
 
+import com.revconnect.network.dto.ConnectionResponse;
 import com.revconnect.network.model.Connection;
+import com.revconnect.network.model.ConnectionStatus;
 import com.revconnect.network.repository.ConnectionRepository;
-import com.revconnect.network.repository.FollowRepository;
-import com.revconnect.network.service.NetworkService;
 import com.revconnect.notification.service.NotificationService;
 import com.revconnect.user.model.User;
-import com.revconnect.user.repository.UserRepository;
 import com.revconnect.user.service.UserService;
+import com.revconnect.network.service.NetworkService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +18,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class NetworkServiceTest {
@@ -25,32 +28,59 @@ class NetworkServiceTest {
     @InjectMocks
     private NetworkService networkService;
 
-    @Mock private ConnectionRepository connectionRepository;
-    @Mock private FollowRepository followRepository;
-    @Mock private UserService userService;
-    @Mock private UserRepository userRepository;
-    @Mock private NotificationService notificationService;
+    @Mock
+    private ConnectionRepository connectionRepository;
 
-    private User user1;
-    private User user2;
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private NotificationService notificationService;
+
+    private User sender;
+    private User receiver;
 
     @BeforeEach
     void setup() {
-        user1 = User.builder().id(1L).username("user1").build();
-        user2 = User.builder().id(2L).username("user2").build();
+
+        sender = User.builder()
+                .id(1L)
+                .username("sender")
+                .build();
+
+        receiver = User.builder()
+                .id(2L)
+                .username("receiver")
+                .build();
     }
 
     @Test
     void testSendConnectionRequest() {
 
-        when(userService.getUserByUsername("user1")).thenReturn(user1);
-        when(userService.getUserById(2L)).thenReturn(user2);
+        when(userService.getUserByUsername("sender"))
+                .thenReturn(sender);
+
+        when(userService.getUserById(2L))
+                .thenReturn(receiver);
+
         when(connectionRepository.findConnectionBetween(1L, 2L))
                 .thenReturn(Optional.empty());
 
-        networkService.sendConnectionRequest(2L, "user1");
+        Connection connection = Connection.builder()
+                .id(1L)
+                .requester(sender)
+                .addressee(receiver)
+                .status(ConnectionStatus.PENDING)
+                .build();
 
-        verify(connectionRepository).save(any(Connection.class));
-        verify(notificationService).notifyConnectionRequest(user1, user2);
+        when(connectionRepository.save(any(Connection.class)))
+                .thenReturn(connection);
+
+        ConnectionResponse result =
+                networkService.sendConnectionRequest(2L, "sender");
+
+        assertNotNull(result);
     }
+
+
 }

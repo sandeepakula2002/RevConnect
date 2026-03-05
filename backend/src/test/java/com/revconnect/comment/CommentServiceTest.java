@@ -1,5 +1,6 @@
 package com.revconnect.comment;
 
+import com.revconnect.comment.dto.CommentResponse;
 import com.revconnect.comment.model.Comment;
 import com.revconnect.comment.repository.CommentRepository;
 import com.revconnect.comment.service.CommentService;
@@ -45,6 +46,7 @@ class CommentServiceTest {
 
     @BeforeEach
     void setup() {
+
         user = User.builder()
                 .id(1L)
                 .username("testuser")
@@ -67,9 +69,11 @@ class CommentServiceTest {
         when(commentRepository.save(any(Comment.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        Comment comment = commentService.addComment(1L, "Nice", "testuser");
+        CommentResponse response =
+                commentService.addComment(1L, "Nice", "testuser");
 
-        assertEquals("Nice", comment.getContent());
+        assertEquals("Nice", response.getContent());
+
         verify(notificationService).notifyComment(user, post);
     }
 
@@ -84,7 +88,8 @@ class CommentServiceTest {
 
         commentService.getComments(1L, 0, 10);
 
-        verify(commentRepository).findByPostOrderByCreatedAtAsc(any(), any());
+        verify(commentRepository)
+                .findByPostOrderByCreatedAtAsc(any(), any());
     }
 
     @Test

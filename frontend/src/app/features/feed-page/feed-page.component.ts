@@ -5,7 +5,7 @@ import { PostService } from '../../core/services/post.service';
 import { UserService } from '../../core/services/user.service';
 import { AuthService } from '../../core/services/auth.service';
 
-import { Post, ApiResponse, PageResponse, User, Comment } from '../../shared/models/models';
+import { Post, ApiResponse, PageResponse, User } from '../../shared/models/models';
 
 @Component({
   selector: 'app-feed-page',
@@ -17,14 +17,16 @@ export class FeedPageComponent implements OnInit {
 
   page = 0;
   lastPage = false;
+
   loading = true;
   loadingMore = false;
+
+  creatingPost = false;
 
   currentUserId = 0;
 
   newPostContent = '';
   newPostHashtags = '';
-  creatingPost = false;
 
   users: User[] = [];
   private searchSubject = new Subject<string>();
@@ -44,7 +46,7 @@ export class FeedPageComponent implements OnInit {
 
   }
 
-  // ================= SEARCH =================
+  // ================= SEARCH USERS =================
 
   setupSearch(): void {
 
@@ -53,7 +55,9 @@ export class FeedPageComponent implements OnInit {
       distinctUntilChanged(),
       switchMap(q => this.userService.searchUsers(q))
     ).subscribe(res => {
+
       this.users = res.data ?? [];
+
     });
 
   }
@@ -69,13 +73,14 @@ export class FeedPageComponent implements OnInit {
 
   }
 
-  // ================= FEED =================
+  // ================= LOAD FEED =================
 
   loadFeed(): void {
 
+    this.page = 0;
     this.loading = true;
 
-    this.postService.getUserPosts(this.currentUserId, 0, 10)
+    this.postService.getUserPosts(this.currentUserId, this.page, 10)
       .subscribe((res: ApiResponse<PageResponse<Post>>) => {
 
         this.posts = res.data.content.map(p => ({
@@ -92,6 +97,8 @@ export class FeedPageComponent implements OnInit {
 
   }
 
+  // ================= INFINITE SCROLL =================
+
   @HostListener('window:scroll')
   onScroll(): void {
 
@@ -104,6 +111,8 @@ export class FeedPageComponent implements OnInit {
   }
 
   loadMore(): void {
+
+    if (this.loadingMore) return;
 
     this.loadingMore = true;
     this.page++;
@@ -127,7 +136,7 @@ export class FeedPageComponent implements OnInit {
 
   }
 
-  // ================= POST =================
+  // ================= CREATE POST =================
 
   createPost(): void {
 
@@ -155,7 +164,7 @@ export class FeedPageComponent implements OnInit {
 
   }
 
-  // ================= LIKE =================
+  // ================= LIKE POST =================
 
   toggleLike(post: any): void {
 
@@ -177,7 +186,7 @@ export class FeedPageComponent implements OnInit {
 
   }
 
-  // ================= COMMENTS =================
+  // ================= TOGGLE COMMENTS =================
 
   toggleComments(post: any): void {
 
@@ -189,33 +198,41 @@ export class FeedPageComponent implements OnInit {
 
   }
 
- loadComments(post: any): void {
+  // ================= LOAD COMMENTS =================
 
-   this.postService.getComments(post.id, 0)
-     .subscribe(res => {
+  loadComments(post: any): void {
 
-       const comments = res.data?.content ?? [];
+    this.postService.getComments(post.id, 0)
+      .subscribe(res => {
 
-       comments.forEach((c: any) => {
-         c.replies = c.replies ?? [];
-         c.replyText = '';
-       });
+        const comments = res.data?.content ?? [];
 
-       // newest comment first
-       post.comments = comments.reverse();
+        comments.forEach((c: any) => {
+          c.replies = c.replies ?? [];
+          c.replyText = '';
+        });
 
-     });
+        post.comments = comments.reverse();
+        post.commentCount = post.comments.length;
 
- }
+      });
+
+  }
+
+  // ================= ADD COMMENT =================
 
   addComment(post: any): void {
 
-    if (!post.newComment?.trim()) return;
+    const text = post.newComment?.trim();
 
-    this.postService.addComment(post.id, post.newComment)
+    if (!text) return;
+
+    this.postService.addComment(post.id, text)
       .subscribe(res => {
 
-       post.comments.unshift(res.data);
+        post.comments.unshift(res.data);
+        post.commentCount++;
+
         post.newComment = '';
 
       });
@@ -231,14 +248,16 @@ export class FeedPageComponent implements OnInit {
       comment.likedByCurrentUser = false;
       comment.likeCount--;
 
+      this.postService.unlikeComment(comment.id).subscribe();
+
     } else {
 
       comment.likedByCurrentUser = true;
       comment.likeCount++;
 
-    }
+      this.postService.likeComment(comment.id).subscribe();
 
-    this.postService.likeComment(comment.id).subscribe();
+    }
 
   }
 
@@ -253,6 +272,8 @@ export class FeedPageComponent implements OnInit {
           (c: any) => c.id !== comment.id
         );
 
+        post.commentCount--;
+
       });
 
   }
@@ -261,33 +282,37 @@ export class FeedPageComponent implements OnInit {
 
   reply(post: any, parent: any): void {
 
-    const content = parent.replyText;
+    const content = parent.replyText?.trim();
 
-    if (!content?.trim()) return;
+    if (!content) return;
 
     this.postService.replyToComment(post.id, parent.id, content)
       .subscribe(res => {
 
-        if (!parent.replies) {
-          parent.replies = [];
-        }
-
+        parent.replies = parent.replies ?? [];
         parent.replies.push(res.data);
+
         parent.replyText = '';
+        post.commentCount++;
 
       });
 
   }
 
-  // ================= FOLLOW =================
+  // ================= FOLLOW USER =================
 
   follow(user: User): void {
 
-    console.log("Follow user", user.username);
+    this.userService.followUser(user.id)
+      .subscribe(() => {
+
+        console.log("Followed", user.username);
+
+      });
 
   }
 
-  // ================= HASHTAG =================
+  // ================= HASHTAG FORMAT =================
 
   formatContent(text: string): string[] {
 

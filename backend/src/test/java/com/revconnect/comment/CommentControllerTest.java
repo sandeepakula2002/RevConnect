@@ -2,9 +2,8 @@ package com.revconnect.comment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.revconnect.comment.controller.CommentController;
-import com.revconnect.comment.model.Comment;
+import com.revconnect.comment.dto.CommentResponse;
 import com.revconnect.comment.service.CommentService;
-import com.revconnect.user.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CommentControllerTest {
 
     private MockMvc mockMvc;
-    private ObjectMapper objectMapper = new ObjectMapper();
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Mock
     private CommentService commentService;
@@ -47,44 +47,30 @@ class CommentControllerTest {
     @Test
     void testAddComment() throws Exception {
 
-        User user = new User();
-        user.setId(1L);
-        user.setUsername("demoUser");
-
-        Comment comment = new Comment();
-        comment.setId(1L);
-        comment.setContent("Nice");
-        comment.setUser(user); // 🔥 IMPORTANT
+        CommentResponse response = mock(CommentResponse.class);
 
         when(commentService.addComment(anyLong(), anyString(), anyString()))
-                .thenReturn(comment);
+                .thenReturn(response);
 
         mockMvc.perform(post("/posts/1/comments")
                         .principal(() -> "demoUser")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(
-                                Map.of("content","Nice"))))
+                                Map.of("content", "Nice"))))
                 .andExpect(status().isCreated());
     }
 
     @Test
     void testGetComments() throws Exception {
 
-        User user = new User();
-        user.setId(1L);
-        user.setUsername("demoUser");
-
-        Comment comment = new Comment();
-        comment.setId(1L);
-        comment.setContent("Nice");
-        comment.setUser(user);
+        CommentResponse response = mock(CommentResponse.class);
 
         when(commentService.getComments(anyLong(), anyInt(), anyInt()))
-                .thenReturn(new PageImpl<>(new java.util.ArrayList<>()));
+                .thenReturn(new PageImpl<>(List.of(response)));
 
         mockMvc.perform(get("/posts/1/comments")
-                        .param("page","0")
-                        .param("size","10"))
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andExpect(status().isOk());
     }
 

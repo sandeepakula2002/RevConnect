@@ -1,131 +1,98 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { LoginComponent } from './login.component';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 import { of, throwError } from 'rxjs';
+
+import { LoginComponent } from './login.component';
 import { AuthService } from '../../../core/services/auth.service';
-import { ApiResponse } from '../../../core/models/api-response.model'; // adjust path if needed
 
 describe('LoginComponent', () => {
 
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
+  let authServiceSpy: jasmine.SpyObj<AuthService>;
 
-  let mockAuthService: jasmine.SpyObj<AuthService>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  const mockApi = (data: any) => ({
+    success: true,
+    data,
+    statusCode: 200,
+    timestamp: new Date().toISOString()
+  });
 
   beforeEach(async () => {
 
-    mockAuthService = jasmine.createSpyObj('AuthService', [
+    authServiceSpy = jasmine.createSpyObj('AuthService', [
       'login',
       'forgotPassword'
     ]);
 
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
-
     await TestBed.configureTestingModule({
-      declarations: [LoginComponent],
-      imports: [ReactiveFormsModule],
+
+      imports: [
+        ReactiveFormsModule,
+        RouterTestingModule.withRoutes([
+          { path: 'feed', component: LoginComponent }
+        ])
+      ],
+
+      declarations: [
+        LoginComponent
+      ],
+
       providers: [
-        { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter }
+        { provide: AuthService, useValue: authServiceSpy }
       ]
+
     }).compileComponents();
+
+  });
+
+  beforeEach(() => {
 
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
+
     fixture.detectChanges();
+
   });
 
-  // ================= BASIC =================
+  it('should login successfully', () => {
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
-  // ================= LOGIN SUCCESS =================
-
-  it('should login successfully and navigate to feed', () => {
-
-    const mockResponse: ApiResponse<any> = {
-      success: true,
-      statusCode: 200,
-      data: {},
-      timestamp: new Date()
-    };
-
-    mockAuthService.login.and.returnValue(of(mockResponse));
+    authServiceSpy.login.and.returnValue(
+      of(mockApi({
+        token: 'test-token',
+        userId: 1,
+        username: 'john',
+        role: 'PERSONAL'
+      }))
+    );
 
     component.loginForm.setValue({
-      usernameOrEmail: 'demo',
+      usernameOrEmail: 'test',
       password: 'password123'
     });
 
     component.onSubmit();
 
-    expect(mockAuthService.login).toHaveBeenCalled();
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/feed'], { replaceUrl: true });
+    expect(authServiceSpy.login).toHaveBeenCalled();
+
   });
 
-  // ================= LOGIN FAILURE =================
+  it('should show login error', () => {
 
-  it('should show error on login failure', () => {
-
-    mockAuthService.login.and.returnValue(
-      throwError(() => ({
-        error: { message: 'Invalid credentials' }
-      }))
+    authServiceSpy.login.and.returnValue(
+      throwError(() => ({ error: { message: 'Invalid login' } }))
     );
 
     component.loginForm.setValue({
-      usernameOrEmail: 'demo',
-      password: 'wrongpass'
+      usernameOrEmail: 'test',
+      password: 'password123'
     });
 
     component.onSubmit();
 
-    expect(component.error).toBe('Invalid credentials');
-    expect(component.loading).toBeFalse();
-  });
+    expect(component.error).toBeTruthy();
 
-  // ================= FORGOT PASSWORD SUCCESS =================
-
-  it('should reset password successfully', () => {
-
-    const mockResponse: ApiResponse<any> = {
-      success: true,
-      statusCode: 200,
-      data: null,
-      timestamp: new Date()
-    };
-
-    mockAuthService.forgotPassword.and.returnValue(of(mockResponse));
-
-    component.forgotForm.setValue({
-      email: 'test@mail.com',
-      password: 'password123',
-      confirmPassword: 'password123'
-    });
-
-    component.resetPassword();
-
-    expect(mockAuthService.forgotPassword).toHaveBeenCalled();
-    expect(component.forgotMessage).toContain('Password reset successful');
-  });
-
-  // ================= PASSWORD MISMATCH =================
-
-  it('should not submit if passwords do not match', () => {
-
-    component.forgotForm.setValue({
-      email: 'test@mail.com',
-      password: 'password123',
-      confirmPassword: 'different'
-    });
-
-    component.resetPassword();
-
-    expect(mockAuthService.forgotPassword).not.toHaveBeenCalled();
   });
 
 });

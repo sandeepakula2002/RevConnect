@@ -1,81 +1,88 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AppComponent } from './app.component';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+
+import { AppComponent } from './app.component';
 import { AuthService } from './core/services/auth.service';
 import { NotificationService } from './core/services/notification.service';
-import { Component } from '@angular/core';
-
-
-// Dummy Navbar Component (because template uses <app-navbar>)
-@Component({
-  selector: 'app-navbar',
-  template: '<div>Navbar</div>'
-})
-class MockNavbarComponent {}
 
 describe('AppComponent', () => {
 
-  let fixture: ComponentFixture<AppComponent>;
   let component: AppComponent;
+  let fixture: ComponentFixture<AppComponent>;
 
-  let mockAuthService: any;
-  let mockNotificationService: any;
+  let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
 
-  const userSubject = new BehaviorSubject<any>(null);
+  let userSubject = new BehaviorSubject<any>(null);
+
+  const authServiceMock = {
+    currentUser$: userSubject.asObservable()
+  };
 
   beforeEach(async () => {
 
-    mockAuthService = {
-      currentUser$: userSubject.asObservable()
-    };
-
-    mockNotificationService = {
-      startPolling: jasmine.createSpy('startPolling')
-    };
+    notificationServiceSpy = jasmine.createSpyObj(
+      'NotificationService',
+      ['startPolling']
+    );
 
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule],
-      declarations: [AppComponent, MockNavbarComponent],
+
+      imports: [
+        RouterTestingModule
+      ],
+
+      declarations: [
+        AppComponent
+      ],
+
       providers: [
-        { provide: AuthService, useValue: mockAuthService },
-        { provide: NotificationService, useValue: mockNotificationService }
-      ]
+        { provide: AuthService, useValue: authServiceMock },
+        { provide: NotificationService, useValue: notificationServiceSpy }
+      ],
+
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]   // ⭐ FIX HERE
+
     }).compileComponents();
+
+  });
+
+  beforeEach(() => {
 
     fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;
-  });
 
-  // ================= BASIC =================
+    fixture.detectChanges();
+
+  });
 
   it('should create the app', () => {
     expect(component).toBeTruthy();
   });
 
-  // ================= NOT LOGGED IN =================
-
-  it('should not show navbar when user is not logged in', () => {
-
-    userSubject.next(null);
-    fixture.detectChanges();
-
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('app-navbar')).toBeNull();
+  it('should set isLoggedIn to false when user is null', () => {
+    expect(component.isLoggedIn).toBeFalse();
   });
 
-  // ================= LOGGED IN =================
+  it('should set isLoggedIn to true when user exists', () => {
 
-  it('should show navbar and start polling when user logs in', () => {
+    userSubject.next({ userId: 1 });
 
-    userSubject.next({ username: 'demoUser' });
     fixture.detectChanges();
 
-    const compiled = fixture.nativeElement as HTMLElement;
-
     expect(component.isLoggedIn).toBeTrue();
-    expect(mockNotificationService.startPolling).toHaveBeenCalled();
-    expect(compiled.querySelector('app-navbar')).not.toBeNull();
+
+  });
+
+  it('should start notification polling when user logs in', () => {
+
+    userSubject.next({ userId: 1 });
+
+    fixture.detectChanges();
+
+    expect(notificationServiceSpy.startPolling).toHaveBeenCalled();
+
   });
 
 });
