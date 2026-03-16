@@ -88,7 +88,7 @@ export class AuthService {
   }
 forgotPassword(data: any) {
   return this.http.post(
-    'http://localhost:8080/api/auth/forgot-password',
+    `${this.API}/forgot-password`,
     data
   );
 }

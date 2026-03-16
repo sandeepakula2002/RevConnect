@@ -109,6 +109,30 @@ The proxy config automatically routes `/api` requests to the backend.
 
 ---
 
+## AWS Deployment
+
+This repo now includes AWS deployment support for:
+
+- EC2 backend
+- Amazon RDS MySQL
+- S3 frontend hosting
+
+Key files:
+
+- `docker-compose.aws.yml`
+- `.env.aws.example`
+- `docs/aws-deployment.md`
+
+Current AWS values used in this project:
+
+- EC2 backend: `http://54.146.222.104:8080/api`
+- RDS host: `revconnectdb.ceh62g2e4ks8.us-east-1.rds.amazonaws.com`
+- S3 bucket: `revconnect-frontend`
+
+See `docs/aws-deployment.md` for the full deployment steps.
+
+---
+
 ## All API Endpoints
 
 ### Auth
