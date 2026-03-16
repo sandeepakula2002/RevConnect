@@ -25,7 +25,11 @@ export class NavbarComponent implements OnInit {
     this.notificationService.unreadCount$.subscribe((count: number) => {
       this.unreadCount = count;
     });
-    this.notificationService.getUnreadCount().subscribe();
+    this.notificationService.getUnreadCount().subscribe({
+      error: () => {
+        this.unreadCount = 0;
+      }
+    });
   }
 
   logout() {

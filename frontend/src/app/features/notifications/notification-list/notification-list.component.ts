@@ -1,18 +1,20 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Notification } from '../../../shared/models/models';
 import { Router } from '@angular/router';
-import { interval } from 'rxjs';
+import { Subject, interval } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-notification-list',
   templateUrl: './notification-list.component.html',
   styleUrls: ['./notification-list.component.css']
 })
-export class NotificationListComponent implements OnInit {
+export class NotificationListComponent implements OnInit, OnDestroy {
 
   notifications: Notification[] = [];
   loading: boolean = true;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private notificationService: NotificationService,
@@ -20,12 +22,19 @@ export class NotificationListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-   this.loadNotifications();
+    this.loadNotifications();
 
-   //  Auto refresh every 10 sec
-   interval(10000).subscribe(() => {
-     this.loadNotifications();
-   });
+    // Auto refresh every 10 sec
+    interval(10000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadNotifications();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   // ================= LOAD =================
@@ -34,9 +43,15 @@ export class NotificationListComponent implements OnInit {
     this.loading = true;
 
     this.notificationService.getNotifications()
-      .subscribe(response => {
-        this.notifications = response.data.content;
-        this.loading = false;
+      .subscribe({
+        next: response => {
+          this.notifications = response?.data ?? [];
+          this.loading = false;
+        },
+        error: () => {
+          this.notifications = [];
+          this.loading = false;
+        }
       });
   }
 
@@ -44,8 +59,13 @@ export class NotificationListComponent implements OnInit {
   markRead(notification: Notification): void {
 
     if (!notification.read) {
-      this.notificationService.markAsRead(notification.id).subscribe(() => {
-        notification.read = true;
+      this.notificationService.markAsRead(notification.id).subscribe({
+        next: () => {
+          notification.read = true;
+        },
+        error: () => {
+          // Keep current UI state when backend update fails.
+        }
       });
     }
 
@@ -65,8 +85,13 @@ export class NotificationListComponent implements OnInit {
   markAllRead(): void {
 
     this.notificationService.markAllAsRead()
-      .subscribe(() => {
-        this.notifications.forEach(n => n.read = true);
+      .subscribe({
+        next: () => {
+          this.notifications.forEach(n => n.read = true);
+        },
+        error: () => {
+          // Ignore and keep current list state.
+        }
       });
   }
 
@@ -75,12 +100,19 @@ export class NotificationListComponent implements OnInit {
 
     event.stopPropagation();
 
-    this.notifications.splice(index, 1);
+    this.notificationService.deleteNotification(notification.id).subscribe({
+      next: () => {
+        this.notifications.splice(index, 1);
+      },
+      error: () => {
+        // Keep item if delete fails.
+      }
+    });
   }
 
   // ================= UNREAD COUNT =================
   getUnreadCount(): number {
-    return this.notifications.filter(n => !n.read).length;
+    return (this.notifications ?? []).filter(n => !n.read).length;
   }
 
   // ================= ICON =================

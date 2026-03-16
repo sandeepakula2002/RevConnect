@@ -2,6 +2,14 @@
 
   <h4 class="fw-bold mb-4">👥 My Network</h4>
 
+  <div *ngIf="errorMessage" class="alert alert-danger py-2" role="alert">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success py-2" role="alert">
+    {{ successMessage }}
+  </div>
+
   <ul class="nav nav-tabs mb-4">
 
     <li class="nav-item">
@@ -84,7 +92,13 @@
               </button>
 
               <!-- Connect -->
-              <button *ngIf="!isConnected(user.id) && !sentUserIds.has(user.id)"
+              <button *ngIf="isSelf(user.id)"
+                      class="btn btn-sm btn-light"
+                      disabled>
+                You
+              </button>
+
+              <button *ngIf="!isSelf(user.id) && !isConnected(user.id) && !sentUserIds.has(user.id)"
                       class="btn btn-sm btn-primary"
                       (click)="sendRequest(user)">
                 Connect
